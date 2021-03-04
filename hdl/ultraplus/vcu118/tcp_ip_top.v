@@ -703,7 +703,7 @@ reg[7:0] packetGap;
      end
  end
  
- iperf_udp_client_ip iperf_udp_client_inst (
+ iperf_udp_ip iperf_udp_inst (
    .aclk(aclk),                                            // input wire aclk
    .aresetn(aresetn),                                      // input wire aresetn
    .runExperiment_V(runUdpExperiment | runIperfUdp),                      // input wire [0 : 0] runExperiment_V

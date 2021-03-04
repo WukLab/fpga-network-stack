@@ -1,7 +1,7 @@
 set proj_name "tcp_ip_vcu118"
 set root_dir [pwd]
 set proj_dir $root_dir/$proj_name
-set src_dir $root_dir/../rtl
+set src_dir $root_dir/../hdl
 set ip_dir $root_dir/../ip
 set ip_repo $root_dir/../iprepo
 set constraints_dir $root_dir/../constraints
@@ -14,7 +14,7 @@ if { [file isdirectory $ip_repo] } {
 	exit 1
 }
 # Create project
-create_project $proj_name $proj_dir
+create_project -force $proj_name $proj_dir
 
 # Set project properties
 set obj [get_projects $proj_name]
@@ -36,19 +36,18 @@ add_files -fileset constrs_1 $constraints_dir/vcu118.xdc
 #create ip directory
 file mkdir $ip_dir/vu9p
 
-
 #create ips
 
 #Network interface
 
-create_ip -name xxv_ethernet -vendor xilinx.com -library ip -version 2.4 -module_name ethernet_10g_ip -dir $ip_dir/vu9p
+create_ip -name xxv_ethernet -vendor xilinx.com -library ip -version 3.2 -module_name ethernet_10g_ip -dir $ip_dir/vu9p
 set_property -dict [list CONFIG.LINE_RATE {10} CONFIG.NUM_OF_CORES {1} CONFIG.INCLUDE_AXI4_INTERFACE {0} CONFIG.GT_REF_CLK_FREQ {161.1328125} CONFIG.GT_DRP_CLK {125} CONFIG.GT_GROUP_SELECT {Quad_X1Y12} CONFIG.LANE1_GT_LOC {X1Y48} CONFIG.ENABLE_PIPELINE_REG {1} CONFIG.Component_Name {ethernet_10g_ip}] [get_ips ethernet_10g_ip]
 generate_target {instantiation_template} [get_files $ip_dir/vu9p/ethernet_10g_ip/ethernet_10g_ip.xci]
 update_compile_order -fileset sources_1
 
 #FIFOs
 
-create_ip -name axis_data_fifo -vendor xilinx.com -library ip -version 1.1 -module_name axis_data_fifo_64_cc -dir $ip_dir/vu9p
+create_ip -name axis_data_fifo -vendor xilinx.com -library ip  -module_name axis_data_fifo_64_cc -dir $ip_dir/vu9p
 set_property -dict [list CONFIG.TDATA_NUM_BYTES {8} CONFIG.IS_ACLK_ASYNC {1} CONFIG.HAS_TKEEP {1} CONFIG.HAS_TLAST {1} CONFIG.SYNCHRONIZATION_STAGES {3} CONFIG.Component_Name {axis_data_fifo_64_cc}] [get_ips axis_data_fifo_64_cc]
 generate_target {instantiation_template} [get_files $ip_dir/vu9p/axis_data_fifo_64_cc/axis_data_fifo_64_cc.xci]
 update_compile_order -fileset sources_1
@@ -93,11 +92,11 @@ create_ip -name toe -vendor ethz.systems -library hls -version 1.6 -module_name 
 generate_target {instantiation_template} [get_files $ip_dir/vu9p/toe_ip/toe_ip.xci]
 update_compile_order -fileset sources_1
 
-create_ip -name ip_handler -vendor ethz.systems -library hls -version 1.2 -module_name ip_handler_ip -dir $ip_dir/vu9p
-generate_target {instantiation_template} [get_files $ip_dir/vu9p/ip_handler_ip/ip_handler_ip.xci]
+create_ip -name ip_handler -vendor ethz.systems.fpga -library hls -module_name ip_handler -dir $ip_dir/vu9p
+generate_target {instantiation_template} [get_files $ip_dir/vu9p/ip_handler/ip_handler.xci]
 update_compile_order -fileset sources_1
 
-create_ip -name mac_ip_encode -vendor xilinx.labs -library hls -version 1.04 -module_name mac_ip_encode_ip -dir $ip_dir/vu9p
+create_ip -name mac_ip_encode -vendor ethz.systems.fpga -library hls -module_name mac_ip_encode_ip -dir $ip_dir/vu9p
 generate_target {instantiation_template} [get_files $ip_dir/vu9p/mac_ip_encode_ip/mac_ip_encode_ip.xci]
 update_compile_order -fileset sources_1
 
@@ -117,7 +116,7 @@ create_ip -name iperf_client -vendor ethz.systems.fpga -library hls -version 1.0
 generate_target {instantiation_template} [get_files $ip_dir/vu9p/iperf_client_ip/iperf_client_ip.xci]
 update_compile_order -fileset sources_1
 
-create_ip -name arp_server_subnet -vendor ethz.systems -library hls -version 1.0 -module_name arp_server_subnet_ip -dir $ip_dir/vu9p
+create_ip -name arp_server_subnet -vendor ethz.systems.fpga -library hls -module_name arp_server_subnet_ip -dir $ip_dir/vu9p
 generate_target {instantiation_template} [get_files $ip_dir/vu9p/arp_server_subnet_ip/arp_server_subnet_ip.xci]
 update_compile_order -fileset sources_1
 
@@ -129,15 +128,15 @@ create_ip -name udp -vendor ethz.systems.fpga -library hls -version 0.4 -module_
 generate_target {instantiation_template} [get_files $ip_dir/vu9p/udp_ip/udp_ip.xci]
 update_compile_order -fileset sources_1
 
-create_ip -name iperf_udp_client -vendor ethz.systems.fpga -library hls -version 0.8 -module_name iperf_udp_client_ip -dir $ip_dir/vu9p
-generate_target {instantiation_template} [get_files $ip_dir/vu9p/iperf_udp_client_ip/iperf_udp_client_ip.xci]
+create_ip -name iperf_udp -vendor ethz.systems.fpga -library hls -module_name iperf_udp_ip -dir $ip_dir/vu9p
+generate_target {instantiation_template} [get_files $ip_dir/vu9p/iperf_udp_ip/iperf_udp_ip.xci]
 update_compile_order -fileset sources_1
 
 #create_ip -name udpAppMux -vendor xilinx.labs -library hls -version 1.05 -module_name udpAppMux_0 -dir $ip_dir/vu9p
 #generate_target {instantiation_template} [get_files $ip_dir/vu9p/udpAppMux_0/udpAppMux_0.xci]
 #update_compile_order -fileset sources_1
 
-create_ip -name dhcp_client -vendor xilinx.labs -library hls -version 1.05 -module_name dhcp_client_ip -dir $ip_dir/vu9p
+create_ip -name dhcp_client -vendor xilinx.labs -library hls -module_name dhcp_client_ip -dir $ip_dir/vu9p
 generate_target {instantiation_template} [get_files $ip_dir/vu9p/dhcp_client_ip/dhcp_client_ip.xci]
 update_compile_order -fileset sources_1
 
