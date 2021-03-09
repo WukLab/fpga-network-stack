@@ -32,7 +32,8 @@
 module tcp_stack #(
     parameter TCP_EN = 1,
     parameter WIDTH = 64,
-    parameter RX_DDR_BYPASS_EN = 0
+    parameter RX_DDR_BYPASS_EN = 1,
+    parameter NUM_TCP_CHANNELS = 1
 )(
     input wire          net_clk,
     input wire          net_aresetn,
@@ -763,18 +764,24 @@ axis_256_to_512_converter tcp_txwrite_data_converter (
 );
 end
 if (WIDTH==512) begin
+/*
+ * TODO YS
+ * Not sure if this is correct.
+ */
 //TCP Data Path
-assign axis_rxread_data.valid = s_axis_mem_read_data[ddrPortNetworkRx].valid;
-assign s_axis_mem_read_data[ddrPortNetworkRx].ready = axis_rxread_data.ready;
-assign axis_rxread_data.data = s_axis_mem_read_data[ddrPortNetworkRx].data;
-assign axis_rxread_data.keep = s_axis_mem_read_data[ddrPortNetworkRx].keep;
-assign axis_rxread_data.last = s_axis_mem_read_data[ddrPortNetworkRx].last;
-
-assign m_axis_mem_write_data[ddrPortNetworkRx].valid = axis_rxwrite_data.valid;
-assign axis_rxwrite_data.ready = m_axis_mem_write_data[ddrPortNetworkRx].ready;
-assign m_axis_mem_write_data[ddrPortNetworkRx].data = axis_rxwrite_data.data;
-assign m_axis_mem_write_data[ddrPortNetworkRx].keep = axis_rxwrite_data.keep;
-assign m_axis_mem_write_data[ddrPortNetworkRx].last = axis_rxwrite_data.last;
+if (RX_DDR_BYPASS_EN == 0) begin
+    assign axis_rxread_data.valid = s_axis_mem_read_data[ddrPortNetworkRx].valid;
+    assign s_axis_mem_read_data[ddrPortNetworkRx].ready = axis_rxread_data.ready;
+    assign axis_rxread_data.data = s_axis_mem_read_data[ddrPortNetworkRx].data;
+    assign axis_rxread_data.keep = s_axis_mem_read_data[ddrPortNetworkRx].keep;
+    assign axis_rxread_data.last = s_axis_mem_read_data[ddrPortNetworkRx].last;
+    
+    assign m_axis_mem_write_data[ddrPortNetworkRx].valid = axis_rxwrite_data.valid;
+    assign axis_rxwrite_data.ready = m_axis_mem_write_data[ddrPortNetworkRx].ready;
+    assign m_axis_mem_write_data[ddrPortNetworkRx].data = axis_rxwrite_data.data;
+    assign m_axis_mem_write_data[ddrPortNetworkRx].keep = axis_rxwrite_data.keep;
+    assign m_axis_mem_write_data[ddrPortNetworkRx].last = axis_rxwrite_data.last;
+end
 
 assign axis_txread_data.valid = s_axis_mem_read_data[ddrPortNetworkTx].valid;
 assign s_axis_mem_read_data[ddrPortNetworkTx].ready = axis_txread_data.ready;
