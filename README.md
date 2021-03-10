@@ -1,3 +1,9 @@
+# Note By Yizhou
+
+I'm adding a folder `hls/snic_handler`, which is based on `hls/iperf_client`.
+
+This `snic_handler` is deployed with each `tcp_top`.
+
 # Scalable Network Stack supporting TCP/IP, RoCEv2, UDP/IP at 10-100Gbit/s
 
 #### Table of contents

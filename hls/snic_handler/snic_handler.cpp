@@ -1,44 +1,15 @@
-/************************************************
-Copyright (c) 2019, Systems Group, ETH Zurich.
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-this list of conditions and the following disclaimer in the documentation
-and/or other materials provided with the distribution.
-
-3. Neither the name of the copyright holder nor the names of its contributors
-may be used to endorse or promote products derived from this software
-without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-************************************************/
-#include "iperf_client_config.hpp"
-#include "iperf_client.hpp"
+#include "snic_handler_config.hpp"
+#include "snic_handler.hpp"
 #include <iostream>
 
 //Buffers responses coming from the TCP stack
-void status_handler(hls::stream<appTxRsp>&				txStatus,
-							hls::stream<internalAppTxRsp>&	txStatusBuffer)
+void status_handler(hls::stream<appTxRsp>&			txStatus,
+					hls::stream<internalAppTxRsp>&	txStatusBuffer)
 {
 #pragma HLS PIPELINE II=1
 #pragma HLS INLINE off
 
-	if (!txStatus.empty())
-	{
+	if(!txStatus.empty()) {
 		appTxRsp resp = txStatus.read();
 		txStatusBuffer.write(internalAppTxRsp(resp.sessionID, resp.error));
 	}
@@ -47,33 +18,19 @@ void status_handler(hls::stream<appTxRsp>&				txStatus,
 template <int WIDTH>
 void client(hls::stream<ipTuple>&				openConnection,
             hls::stream<openStatus>& 			openConStatus,
-				hls::stream<ap_uint<16> >&			closeConnection,
-				hls::stream<appTxMeta>&				txMetaData,
-				hls::stream<net_axis<WIDTH> >& 	txData,
-				hls::stream<internalAppTxRsp>&	txStatus,
-				hls::stream<bool>&					startSignal,
-				hls::stream<bool>&					stopSignal,
-				ap_uint<1>		runExperiment,
-				ap_uint<1>		dualModeEn,
-				ap_uint<14>		useConn,
-				ap_uint<8> 		pkgWordCount,
-				ap_uint<8>		packetGap,
-            ap_uint<32>    timeInSeconds,
-				ap_uint<32>		regIpAddress0,
-				ap_uint<32>		regIpAddress1,
-				ap_uint<32>		regIpAddress2,
-				ap_uint<32>		regIpAddress3,
-				ap_uint<32>		regIpAddress4,
-				ap_uint<32>		regIpAddress5,
-				ap_uint<32>		regIpAddress6,
-				ap_uint<32>		regIpAddress7,
-				ap_uint<32>		regIpAddress8,
-				ap_uint<32>		regIpAddress9)
+			hls::stream<ap_uint<16> >&			closeConnection,
+			hls::stream<appTxMeta>&				txMetaData,
+			hls::stream<net_axis<WIDTH> >& 	txData,
+			hls::stream<internalAppTxRsp>&	txStatus,
+			ap_uint<1>		runExperiment,
+			ap_uint<14>		useConn,
+			ap_uint<8> 		pkgWordCount,
+			ap_uint<32>		regIpAddress0)
 {
 #pragma HLS PIPELINE II=1
 #pragma HLS INLINE off
 
-	enum iperfFsmStateType {IDLE, INIT_CON, WAIT_CON, CONSTRUCT_HEADER, INIT_RUN, START_PKG, CHECK_REQ, WRITE_PKG, CHECK_TIME, PKG_GAP};
+	enum iperfFsmStateType {IDLE, INIT_CON, WAIT_CON, CONSTRUCT_HEADER, INIT_RUN, START_PKG, CHECK_REQ, WRITE_PKG, CHECK_TIME};
 	static iperfFsmStateType iperfFsmState = IDLE;
 
 	static ap_uint<14> numConnections = 0;
@@ -86,10 +43,6 @@ void client(hls::stream<ipTuple>&				openConnection,
 	static iperfTcpHeader<WIDTH> header;
 	static ap_uint<8> packetGapCounter = 0;
 
-
-	/*
-	 * CLIENT FSM
-	 */
 	switch (iperfFsmState)
 	{
 	case IDLE:
@@ -112,33 +65,6 @@ void client(hls::stream<ipTuple>&				openConnection,
 			{
 			case 0:
 				openTuple.ip_address = regIpAddress0;
-				break;
-			case 1:
-				openTuple.ip_address = regIpAddress1;
-				break;
-			case 2:
-				openTuple.ip_address = regIpAddress2;
-				break;
-			case 3:
-				openTuple.ip_address = regIpAddress3;
-				break;
-			case 4:
-				openTuple.ip_address = regIpAddress4;
-				break;
-			case 5:
-				openTuple.ip_address = regIpAddress5;
-				break;
-			case 6:
-				openTuple.ip_address = regIpAddress6;
-				break;
-			case 7:
-				openTuple.ip_address = regIpAddress7;
-				break;
-			case 8:
-				openTuple.ip_address = regIpAddress8;
-				break;
-			case 9:
-				openTuple.ip_address = regIpAddress9;
 				break;
 			}
 			openTuple.ip_port = 5001;
@@ -179,7 +105,6 @@ void client(hls::stream<ipTuple>&				openConnection,
 			sessionIt++;
 			if (sessionIt == useConn) //maybe move outside
 			{
-				startSignal.write(true);
 				sessionIt = 0;
 				iperfFsmState = CONSTRUCT_HEADER;
 			}
@@ -187,9 +112,9 @@ void client(hls::stream<ipTuple>&				openConnection,
 		break;
 	case CONSTRUCT_HEADER:
 		header.clear();
-		header.setDualMode(dualModeEn);
+		//header.setDualMode(dualModeEn);
 		header.setListenPort(5001);
-		header.setSeconds(timeInSeconds);
+		//header.setSeconds(timeInSeconds);
 		if (sessionIt == numConnections)
 		{
 			sessionIt = 0;
@@ -306,7 +231,7 @@ void client(hls::stream<ipTuple>&				openConnection,
 		if (currWord.last)
 		{
 			wordCount = 0;
-			iperfFsmState = (packetGap != 0) ? PKG_GAP : CHECK_TIME;
+			iperfFsmState = CHECK_TIME;
 		}
 	}
 		break;
@@ -333,22 +258,7 @@ void client(hls::stream<ipTuple>&				openConnection,
 			}
 		}
 		break;
-	case PKG_GAP:
-		packetGapCounter++;
-		if (packetGapCounter == packetGap)
-		{
-			packetGapCounter = 0;
-			iperfFsmState = CHECK_TIME;
-		}
-		break;
-	} //switch
-
-	//clock
-	if (!stopSignal.empty())
-	{
-		stopSignal.read(timeOver);
 	}
-	
 }
 
 template <int WIDTH>
@@ -423,40 +333,7 @@ void server(	hls::stream<ap_uint<16> >&		listenPort,
 	}
 }
 
-void clock( hls::stream<bool>&	startSignal,
-            hls::stream<bool>&	stopSignal,
-            ap_uint<64>          timeInCycles)
-{
-#pragma HLS PIPELINE II=1
-#pragma HLS INLINE off
-
-   enum swStateType {WAIT_START, RUN};
-   static swStateType sw_state = WAIT_START;
-   static ap_uint<48> time = 0;
-
-   switch (sw_state)
-   {
-   case WAIT_START:
-      if (!startSignal.empty())
-      {
-         startSignal.read();
-         time = 0;
-         sw_state = RUN;
-      }
-      break;
-   case RUN:
-      time++;
-      if (time == timeInCycles)
-      {
-         stopSignal.write(true);
-         sw_state = WAIT_START;
-      }
-      break;
-   }
-}
-
-
-void iperf_client(	hls::stream<ap_uint<16> >& listenPort,
+void snic_handler(	hls::stream<ap_uint<16> >& listenPort,
 					hls::stream<bool>& listenPortStatus,
 					hls::stream<appNotification>& notifications,
 					hls::stream<appReadRequest>& readRequest,
@@ -469,22 +346,10 @@ void iperf_client(	hls::stream<ap_uint<16> >& listenPort,
 					hls::stream<net_axis<DATA_WIDTH> >& txData,
 					hls::stream<appTxRsp>& txStatus,
 					ap_uint<1>		runExperiment,
-					ap_uint<1>		dualModeEn,
 					ap_uint<14>		useConn,
 					ap_uint<8>		pkgWordCount,
-					ap_uint<8>		packetGap,
-               ap_uint<32>    timeInSeconds,
-               ap_uint<64>    timeInCycles,
-					ap_uint<32>		regIpAddress0,
-					ap_uint<32>		regIpAddress1,
-					ap_uint<32>		regIpAddress2,
-					ap_uint<32>		regIpAddress3,
-					ap_uint<32>		regIpAddress4,
-					ap_uint<32>		regIpAddress5,
-					ap_uint<32>		regIpAddress6,
-					ap_uint<32>		regIpAddress7,
-					ap_uint<32>		regIpAddress8,
-					ap_uint<32>		regIpAddress9)
+               		ap_uint<64>    timeInCycles,
+					ap_uint<32>		regIpAddress0)
 
 {
 	#pragma HLS DATAFLOW disable_start_propagation
@@ -515,27 +380,10 @@ void iperf_client(	hls::stream<ap_uint<16> >& listenPort,
 	#pragma HLS DATA_PACK variable=txStatus
 
 	#pragma HLS INTERFACE ap_none register port=runExperiment
-	#pragma HLS INTERFACE ap_none register port=dualModeEn
 	#pragma HLS INTERFACE ap_none register port=useConn
 	#pragma HLS INTERFACE ap_none register port=pkgWordCount
-	#pragma HLS INTERFACE ap_none register port=packetGap
-	#pragma HLS INTERFACE ap_none register port=timeInSeconds
 	#pragma HLS INTERFACE ap_none register port=timeInCycles
 	#pragma HLS INTERFACE ap_none register port=regIpAddress0
-	#pragma HLS INTERFACE ap_none register port=regIpAddress1
-	#pragma HLS INTERFACE ap_none register port=regIpAddress2
-	#pragma HLS INTERFACE ap_none register port=regIpAddress3
-	#pragma HLS INTERFACE ap_none register port=regIpAddress4
-	#pragma HLS INTERFACE ap_none register port=regIpAddress5
-	#pragma HLS INTERFACE ap_none register port=regIpAddress6
-	#pragma HLS INTERFACE ap_none register port=regIpAddress7
-	#pragma HLS INTERFACE ap_none register port=regIpAddress8
-	#pragma HLS INTERFACE ap_none register port=regIpAddress9
-
-	static hls::stream<bool>		startSignalFifo("startSignalFifo");
-	static hls::stream<bool>		stopSignalFifo("stopSignalFifo");
-	#pragma HLS STREAM variable=startSignalFifo depth=2
-	#pragma HLS STREAM variable=stopSignalFifo depth=2
 
 	//This is required to buffer up to 1024 reponses => supporting up to 1024 connections
 	static hls::stream<internalAppTxRsp>	txStatusBuffer("txStatusBuffer");
@@ -552,24 +400,10 @@ void iperf_client(	hls::stream<ap_uint<16> >& listenPort,
 			txMetaData,
 			txData,
 			txStatusBuffer,
-			startSignalFifo,
-			stopSignalFifo,
 			runExperiment,
-			dualModeEn,
 			useConn,
 			pkgWordCount,
-			packetGap,
-			timeInSeconds,
-			regIpAddress0,
-			regIpAddress1,
-			regIpAddress2,
-			regIpAddress3,
-			regIpAddress4,
-			regIpAddress5,
-			regIpAddress6,
-			regIpAddress7,
-			regIpAddress8,
-			regIpAddress9);
+			regIpAddress0);
 
 	/*
 	 * Server
@@ -580,11 +414,4 @@ void iperf_client(	hls::stream<ap_uint<16> >& listenPort,
 			readRequest,
 			rxMetaData,
 			rxData);
-
-	/*
-	 * Clock
-	 */
-	clock( startSignalFifo,
-			stopSignalFifo,
-			timeInCycles);
 }
