@@ -30,8 +30,7 @@ int main()
 	hls::stream<net_axis<DATA_WIDTH> > dataToEndpoint("dataToEndpoint");
 
 	int count = 0;
-	while (count < 10000)
-	{
+	while (count < 10000) {
 		useConn = 1;
 		runExperiment = 0;
 
@@ -39,25 +38,10 @@ int main()
 			runExperiment = 1;
 		}
 
-		snic_handler(	listenPort,
-						listenPortStatus,
-						notifications,
-						readRequest,
-						rxMetaData,
-						rxData,
-						openConnection,
-						openConStatus,
-						closeConnection,
-						txMetaData,
-						txData,
-						txStatus,
-						runExperiment,
-						useConn,
-						pkgWordCount,
-						ipAddress0,
-						dataFromEndpoint,
-						dataToEndpoint
-					);
+		snic_handler(listenPort, listenPortStatus, notifications, readRequest, rxMetaData,
+			     rxData, openConnection, openConStatus, closeConnection, txMetaData,
+			     txData, txStatus, runExperiment, useConn, pkgWordCount, ipAddress0,
+			     dataFromEndpoint, dataToEndpoint);
 
 		if (!listenPort.empty()) {
 			ap_uint<16> port = listenPort.read();
@@ -68,15 +52,16 @@ int main()
 		if (!openConnection.empty()) {
 			openConnection.read();
 			std::cout << "Opening connection.. at cycle" << count << std::endl;
-			openConStatus.write(openStatus(123+count, true));
+			openConStatus.write(openStatus(123 + count, true));
 		}
 
 		if (!txMetaData.empty()) {
 			appTxMeta meta = txMetaData.read();
-			std::cout << "txMeataData New Pkg: " << std::dec << meta.sessionID << ", length[B]: " << meta.length << std::endl;
+			std::cout << "txMeataData New Pkg: " << std::dec << meta.sessionID
+				  << ", length[B]: " << meta.length << std::endl;
 
 			int toss = rand() % 2;
-			toss = (toss == 0 || meta.length == IPERF_TCP_HEADER_SIZE/8) ? 0 : -1;
+			toss = (toss == 0 || meta.length == IPERF_TCP_HEADER_SIZE / 8) ? 0 : -1;
 			std::cout << "toss: " << toss << std::endl;
 			txStatus.write(appTxRsp(meta.sessionID, meta.length, 0xFFFF, toss));
 		}
@@ -85,7 +70,6 @@ int main()
 			net_axis<DATA_WIDTH> currWord = txData.read();
 			printLE(std::cout, currWord);
 			std::cout << std::endl;
-
 		}
 
 		if (!closeConnection.empty()) {
