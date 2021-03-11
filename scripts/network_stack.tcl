@@ -139,55 +139,58 @@ create_ip -name toe -vendor ethz.systems -library hls -version 1.6 -module_name 
 generate_target {instantiation_template} [get_files $device_ip_dir/toe_ip/toe_ip.xci]
 update_compile_order -fileset sources_1
 
-create_ip -name ip_handler -vendor ethz.systems.fpga -library hls -version 2.0 -module_name ip_handler_ip -dir $device_ip_dir
-generate_target {instantiation_template} [get_files $device_ip_dir/ip_handler_ip/ip_handler_ip.xci]
-update_compile_order -fileset sources_1
-
-create_ip -name mac_ip_encode -vendor ethz.systems.fpga -library hls -version 2.0 -module_name mac_ip_encode_ip -dir $device_ip_dir
-generate_target {instantiation_template} [get_files $device_ip_dir/mac_ip_encode_ip/mac_ip_encode_ip.xci]
-update_compile_order -fileset sources_1
-
-create_ip -name icmp_server -vendor xilinx.labs -library hls -version 1.67 -module_name icmp_server_ip -dir $device_ip_dir
-generate_target {instantiation_template} [get_files $device_ip_dir/icmp_server_ip/icmp_server_ip.xci]
-update_compile_order -fileset sources_1
-
-create_ip -name echo_server_application -vendor ethz.systems -library hls -version 1.2 -module_name echo_server_application_ip -dir $device_ip_dir
-generate_target {instantiation_template} [get_files $device_ip_dir/echo_server_application_ip/echo_server_application_ip.xci]
-update_compile_order -fileset sources_1
-
-create_ip -name iperf_client -vendor ethz.systems.fpga -library hls -version 1.0 -module_name iperf_client_ip -dir $device_ip_dir
-generate_target {instantiation_template} [get_files $device_ip_dir/iperf_client_ip/iperf_client_ip.xci]
-update_compile_order -fileset sources_1
-
-create_ip -name arp_server_subnet -vendor ethz.systems.fpga -library hls -version 1.1 -module_name arp_server_subnet_ip -dir $device_ip_dir
-generate_target {instantiation_template} [get_files $device_ip_dir/arp_server_subnet_ip/arp_server_subnet_ip.xci]
-update_compile_order -fileset sources_1
-
-create_ip -name ipv4 -vendor ethz.systems.fpga -library hls -version 0.1 -module_name ipv4_ip -dir $device_ip_dir
-generate_target {instantiation_template} [get_files $device_ip_dir/ipv4_ip/ipv4_ip.xci]
-update_compile_order -fileset sources_1
-
-create_ip -name udp -vendor ethz.systems.fpga -library hls -version 0.4 -module_name udp_ip -dir $device_ip_dir
-generate_target {instantiation_template} [get_files $device_ip_dir/udp_ip/udp_ip.xci]
-update_compile_order -fileset sources_1
-
-create_ip -name iperf_udp -vendor ethz.systems.fpga -library hls -version 0.9 -module_name iperf_udp_ip -dir $device_ip_dir
-generate_target {instantiation_template} [get_files $device_ip_dir/iperf_udp_ip/iperf_udp_ip.xci]
-update_compile_order -fileset sources_1
-
-#create_ip -name udpAppMux -vendor xilinx.labs -library hls -version 1.05 -module_name udpAppMux_0 -dir $device_ip_dir
-#generate_target {instantiation_template} [get_files $device_ip_dir/udpAppMux_0/udpAppMux_0.xci]
-#update_compile_order -fileset sources_1
-
-create_ip -name dhcp_client -vendor xilinx.labs -library hls -version 1.05 -module_name dhcp_client_ip -dir $device_ip_dir
-generate_target {instantiation_template} [get_files $device_ip_dir/dhcp_client_ip/dhcp_client_ip.xci]
-update_compile_order -fileset sources_1
-
-create_ip -name rocev2 -vendor ethz.systems.fpga -library hls -version 0.82 -module_name rocev2_ip -dir $device_ip_dir
-generate_target {instantiation_template} [get_files $device_ip_dir/rocev2_ip/rocev2_ip.xci]
+create_ip -name snic_handler -vendor wuklab.io -library hls -module_name snic_handler_ip -dir $device_ip_dir
+generate_target {instantiation_template} [get_files $device_ip_dir/snic_handler_ip/snic_handler_ip.xci]
 update_compile_order -fileset sources_1
 
 create_ip -name hash_table -vendor ethz.systems.fpga -library hls -version 1.0 -module_name hash_table_ip -dir $device_ip_dir
 generate_target {instantiation_template} [get_files $device_ip_dir/hash_table_ip/hash_table_ip.xci]
 update_compile_order -fileset sources_1
 
+# create_ip -name ip_handler -vendor ethz.systems.fpga -library hls -version 2.0 -module_name ip_handler_ip -dir $device_ip_dir
+# generate_target {instantiation_template} [get_files $device_ip_dir/ip_handler_ip/ip_handler_ip.xci]
+# update_compile_order -fileset sources_1
+
+# create_ip -name mac_ip_encode -vendor ethz.systems.fpga -library hls -version 2.0 -module_name mac_ip_encode_ip -dir $device_ip_dir
+# generate_target {instantiation_template} [get_files $device_ip_dir/mac_ip_encode_ip/mac_ip_encode_ip.xci]
+# update_compile_order -fileset sources_1
+# 
+# create_ip -name icmp_server -vendor xilinx.labs -library hls -version 1.67 -module_name icmp_server_ip -dir $device_ip_dir
+# generate_target {instantiation_template} [get_files $device_ip_dir/icmp_server_ip/icmp_server_ip.xci]
+# update_compile_order -fileset sources_1
+# 
+# create_ip -name echo_server_application -vendor ethz.systems -library hls -version 1.2 -module_name echo_server_application_ip -dir $device_ip_dir
+# generate_target {instantiation_template} [get_files $device_ip_dir/echo_server_application_ip/echo_server_application_ip.xci]
+# update_compile_order -fileset sources_1
+# 
+# create_ip -name iperf_client -vendor ethz.systems.fpga -library hls -version 1.0 -module_name iperf_client_ip -dir $device_ip_dir
+# generate_target {instantiation_template} [get_files $device_ip_dir/iperf_client_ip/iperf_client_ip.xci]
+# update_compile_order -fileset sources_1
+
+# create_ip -name arp_server_subnet -vendor ethz.systems.fpga -library hls -version 1.1 -module_name arp_server_subnet_ip -dir $device_ip_dir
+# generate_target {instantiation_template} [get_files $device_ip_dir/arp_server_subnet_ip/arp_server_subnet_ip.xci]
+# update_compile_order -fileset sources_1
+
+# create_ip -name ipv4 -vendor ethz.systems.fpga -library hls -version 0.1 -module_name ipv4_ip -dir $device_ip_dir
+# generate_target {instantiation_template} [get_files $device_ip_dir/ipv4_ip/ipv4_ip.xci]
+# update_compile_order -fileset sources_1
+# 
+# create_ip -name udp -vendor ethz.systems.fpga -library hls -version 0.4 -module_name udp_ip -dir $device_ip_dir
+# generate_target {instantiation_template} [get_files $device_ip_dir/udp_ip/udp_ip.xci]
+# update_compile_order -fileset sources_1
+# 
+# create_ip -name iperf_udp -vendor ethz.systems.fpga -library hls -version 0.9 -module_name iperf_udp_ip -dir $device_ip_dir
+# generate_target {instantiation_template} [get_files $device_ip_dir/iperf_udp_ip/iperf_udp_ip.xci]
+# update_compile_order -fileset sources_1
+
+#create_ip -name udpAppMux -vendor xilinx.labs -library hls -version 1.05 -module_name udpAppMux_0 -dir $device_ip_dir
+#generate_target {instantiation_template} [get_files $device_ip_dir/udpAppMux_0/udpAppMux_0.xci]
+#update_compile_order -fileset sources_1
+
+# create_ip -name dhcp_client -vendor xilinx.labs -library hls -version 1.05 -module_name dhcp_client_ip -dir $device_ip_dir
+# generate_target {instantiation_template} [get_files $device_ip_dir/dhcp_client_ip/dhcp_client_ip.xci]
+# update_compile_order -fileset sources_1
+# 
+# create_ip -name rocev2 -vendor ethz.systems.fpga -library hls -version 0.82 -module_name rocev2_ip -dir $device_ip_dir
+# generate_target {instantiation_template} [get_files $device_ip_dir/rocev2_ip/rocev2_ip.xci]
+# update_compile_order -fileset sources_1
