@@ -37,7 +37,6 @@ void client(hls::stream<ipTuple>&				openConnection,
 	static ap_uint<16> currentSessionID;
 	static ap_uint<14> sessionIt = 0;
 	static ap_uint<14> closeIt = 0;
-	static bool timeOver = false;
 	static ap_uint<8> wordCount = 0;
 	static ap_uint<4> ipAddressIdx = 0;
 	static iperfTcpHeader<WIDTH> header;
@@ -50,7 +49,6 @@ void client(hls::stream<ipTuple>&				openConnection,
 		sessionIt = 0;
 		closeIt = 0;
 		numConnections = 0;
-		timeOver = false;
 		ipAddressIdx = 0;
 		if (runExperiment)
 		{
@@ -83,11 +81,9 @@ void client(hls::stream<ipTuple>&				openConnection,
 		}
 		break;
 	case WAIT_CON:
-		if (!openConStatus.empty())
-		{
+		if (!openConStatus.empty()) {
 			openStatus status = openConStatus.read();
-			if (status.success)
-			{
+			if (status.success) {
 				//experimentID[sessionIt] = status.sessionID;
 				std::cout << "Connection successfully opened." << std::endl;
 
@@ -97,42 +93,34 @@ void client(hls::stream<ipTuple>&				openConnection,
 				 */
 				txMetaData.write(appTxMeta(status.sessionID, IPERF_TCP_HEADER_SIZE/8));
 				numConnections++;
-			}
-			else
-			{
+			} else {
 				std::cout << "Connection could not be opened." << std::endl;
 			}
+
 			sessionIt++;
-			if (sessionIt == useConn) //maybe move outside
-			{
+			if (sessionIt == useConn) {
 				sessionIt = 0;
 				iperfFsmState = CONSTRUCT_HEADER;
 			}
 		}
 		break;
+
 	case CONSTRUCT_HEADER:
 		header.clear();
 		//header.setDualMode(dualModeEn);
 		header.setListenPort(5001);
 		//header.setSeconds(timeInSeconds);
-		if (sessionIt == numConnections)
-		{
+
+		if (sessionIt == numConnections) {
 			sessionIt = 0;
 			iperfFsmState = CHECK_REQ;
-		}
-		else if (!txStatus.empty())
-		{
+		} else if (!txStatus.empty()) {
 			internalAppTxRsp resp = txStatus.read();
-			if (resp.error == 0)
-			{
+			if (resp.error == 0) {
 				currentSessionID = resp.sessionID;
 				iperfFsmState = INIT_RUN;
-			}
-			else
-			{
-				//Check if connection was torn down
-				if (resp.error == 1)
-				{
+			} else {
+				if (resp.error == 1) {
 					std::cout << "Connection was torn down. " << resp.sessionID << std::endl;
 					numConnections--;
 				}
@@ -144,8 +132,7 @@ void client(hls::stream<ipTuple>&				openConnection,
 			net_axis<WIDTH> headerWord;
 			headerWord.last = 0;
 
-			if (header.consumeWord(headerWord.data) < (WIDTH/8))
-			{
+			if (header.consumeWord(headerWord.data) < (WIDTH/8)) {
 				headerWord.last = 1;
 
 				/*
@@ -158,40 +145,28 @@ void client(hls::stream<ipTuple>&				openConnection,
 				iperfFsmState = CONSTRUCT_HEADER;
 			}
 			headerWord.keep = ~0;
-			if (headerWord.last)
-			{
-				if (WIDTH == 128)
-				{
+			if (headerWord.last) {
+				if (WIDTH == 128) {
 					headerWord.keep(15, 8) = 0;
 				}
-				if (WIDTH > 128)
-				{
+				if (WIDTH > 128) {
 					headerWord.keep((WIDTH/8)-1, 24) = 0;
 				}
 			}
 			txData.write(headerWord);
-
 		}
 		break;
 	case CHECK_REQ:
-		if (!txStatus.empty())
-		{
+		if (!txStatus.empty()) {
 			internalAppTxRsp resp = txStatus.read();
-			if (resp.error == 0)
-			{
+			if (resp.error == 0) {
 				currentSessionID = resp.sessionID;
 				iperfFsmState = START_PKG;
-			}
-			else
-			{
-				//Check if connection  was torn down
-				if (resp.error == 1)
-				{
+			} else {
+				if (resp.error == 1) {
 					std::cout << "Connection was torn down. " << resp.sessionID << std::endl;
 					numConnections--;
-				}
-				else
-				{
+				} else {
 					txMetaData.write(appTxMeta(resp.sessionID, pkgWordCount*(WIDTH/8)));
 					//sessionIt++;
 				}
@@ -201,6 +176,7 @@ void client(hls::stream<ipTuple>&				openConnection,
 	case START_PKG:
 		{
 			net_axis<WIDTH> currWord;
+
 			for (int i = 0; i < (WIDTH/64); i++)
 			{
 				#pragma HLS UNROLL
@@ -217,46 +193,25 @@ void client(hls::stream<ipTuple>&				openConnection,
 		}
 		break;
 	case WRITE_PKG:
-	{
-		wordCount++;
-		net_axis<WIDTH> currWord;
-		for (int i = 0; i < (WIDTH/64); i++) 
 		{
-			#pragma HLS UNROLL
-			currWord.data(i*64+63, i*64) = 0x3736353433323130;
-			currWord.keep(i*8+7, i*8) = 0xff;
+			wordCount++;
+			net_axis<WIDTH> currWord;
+			for (int i = 0; i < (WIDTH/64); i++) {
+				#pragma HLS UNROLL
+				currWord.data(i*64+63, i*64) = 0x3736353433323130;
+				currWord.keep(i*8+7, i*8) = 0xff;
+			}
+			currWord.last = (wordCount == pkgWordCount);
+			txData.write(currWord);
+			if (currWord.last) {
+				wordCount = 0;
+				iperfFsmState = CHECK_TIME;
+			}
 		}
-		currWord.last = (wordCount == pkgWordCount);
-		txData.write(currWord);
-		if (currWord.last)
-		{
-			wordCount = 0;
-			iperfFsmState = CHECK_TIME;
-		}
-	}
 		break;
+
 	case CHECK_TIME:
-		if (timeOver && closeIt == numConnections)
-		{
-			iperfFsmState = IDLE;
-		}
-		else
-		{
-			if (!timeOver)
-			{
-				txMetaData.write(appTxMeta(currentSessionID, pkgWordCount*(WIDTH/8)));
-			}
-			else
-			{
-				closeConnection.write(currentSessionID);
-				closeIt++;
-			}
-			
-			if (closeIt != numConnections)
-			{
-				iperfFsmState = CHECK_REQ;
-			}
-		}
+		iperfFsmState = IDLE;
 		break;
 	}
 }
@@ -333,27 +288,40 @@ void server(	hls::stream<ap_uint<16> >&		listenPort,
 	}
 }
 
-void snic_handler(	hls::stream<ap_uint<16> >& listenPort,
-					hls::stream<bool>& listenPortStatus,
-					hls::stream<appNotification>& notifications,
-					hls::stream<appReadRequest>& readRequest,
-					hls::stream<ap_uint<16> >& rxMetaData,
-					hls::stream<net_axis<DATA_WIDTH> >& rxData,
-					hls::stream<ipTuple>& openConnection,
-					hls::stream<openStatus>& openConStatus,
-					hls::stream<ap_uint<16> >& closeConnection,
-					hls::stream<appTxMeta>& txMetaData,
-					hls::stream<net_axis<DATA_WIDTH> >& txData,
-					hls::stream<appTxRsp>& txStatus,
-					ap_uint<1>		runExperiment,
-					ap_uint<14>		useConn,
-					ap_uint<8>		pkgWordCount,
-               		ap_uint<64>    timeInCycles,
-					ap_uint<32>		regIpAddress0)
+template <int WIDTH>
+void parse_packets(hls::stream<net_axis<WIDTH> >& dataFromEndpoint,
+		   hls::stream<net_axis<WIDTH> >& dataToEndpoint)
+{
+    if (!dataFromEndpoint.empty()) {
+	net_axis<WIDTH> w = dataFromEndpoint.read();
+	dataToEndpoint.write(w);
+    }
+}
 
+void snic_handler(hls::stream<ap_uint<16> >& listenPort,
+				hls::stream<bool>& listenPortStatus,
+				hls::stream<appNotification>& notifications,
+				hls::stream<appReadRequest>& readRequest,
+				hls::stream<ap_uint<16> >& rxMetaData,
+				hls::stream<net_axis<DATA_WIDTH> >& rxData,
+				hls::stream<ipTuple>& openConnection,
+				hls::stream<openStatus>& openConStatus,
+				hls::stream<ap_uint<16> >& closeConnection,
+				hls::stream<appTxMeta>& txMetaData,
+				hls::stream<net_axis<DATA_WIDTH> >& txData,
+				hls::stream<appTxRsp>& txStatus,
+				ap_uint<1>		runExperiment,
+				ap_uint<14>		useConn,
+				ap_uint<8>		pkgWordCount,
+				ap_uint<32>		regIpAddress0,
+				hls::stream<net_axis<DATA_WIDTH> >& dataFromEndpoint,
+				hls::stream<net_axis<DATA_WIDTH> >& dataToEndpoint)
 {
 	#pragma HLS DATAFLOW disable_start_propagation
 	#pragma HLS INTERFACE ap_ctrl_none port=return
+
+	#pragma HLS INTERFACE axis register port=dataFromEndpoint name=s_axis_dataFromEndpoint
+	#pragma HLS INTERFACE axis register port=dataToEndpoint name=m_axis_dataToEndpoint
 
 	#pragma HLS INTERFACE axis register port=listenPort name=m_axis_listen_port
 	#pragma HLS INTERFACE axis register port=listenPortStatus name=s_axis_listen_port_status
@@ -382,12 +350,23 @@ void snic_handler(	hls::stream<ap_uint<16> >& listenPort,
 	#pragma HLS INTERFACE ap_none register port=runExperiment
 	#pragma HLS INTERFACE ap_none register port=useConn
 	#pragma HLS INTERFACE ap_none register port=pkgWordCount
-	#pragma HLS INTERFACE ap_none register port=timeInCycles
 	#pragma HLS INTERFACE ap_none register port=regIpAddress0
 
 	//This is required to buffer up to 1024 reponses => supporting up to 1024 connections
 	static hls::stream<internalAppTxRsp>	txStatusBuffer("txStatusBuffer");
 	#pragma HLS STREAM variable=txStatusBuffer depth=1024
+
+	/*
+	 * TODO:
+	 *
+	 * Parse data from endpoint, then determine whether we should
+	 *    1.1. acting as a server, listenPort
+	 *    1.2. acting as a client, open with a remote ip:port
+	 *
+	 * packets from/to endpoint should have special mark.
+	 */
+
+	parse_packets<DATA_WIDTH>(dataFromEndpoint, dataToEndpoint);
 
 	/*
 	 * Client
@@ -408,7 +387,7 @@ void snic_handler(	hls::stream<ap_uint<16> >& listenPort,
 	/*
 	 * Server
 	 */
-	server<DATA_WIDTH>(	listenPort,
+	server<DATA_WIDTH>(listenPort,
 			listenPortStatus,
 			notifications,
 			readRequest,

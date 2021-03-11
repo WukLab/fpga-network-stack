@@ -21,22 +21,24 @@ int main()
 	ap_uint<1> runExperiment;
 	ap_uint<13> useConn;
 	ap_uint<8> pkgWordCount;
-	ap_uint<64>    timeInCycles;
 
 	ap_uint<32> ipAddress0 = 0x01010101;
 
 	pkgWordCount = 8;
-	timeInCycles = 1000;
+
+	hls::stream<net_axis<DATA_WIDTH> > dataFromEndpoint("dataFromEndpoint");
+	hls::stream<net_axis<DATA_WIDTH> > dataToEndpoint("dataToEndpoint");
 
 	int count = 0;
 	while (count < 10000)
 	{
-		useConn = 2;
+		useConn = 1;
 		runExperiment = 0;
-		if (count == 20)
-		{
+
+		if (count == 20) {
 			runExperiment = 1;
 		}
+
 		snic_handler(	listenPort,
 						listenPortStatus,
 						notifications,
@@ -52,40 +54,41 @@ int main()
 						runExperiment,
 						useConn,
 						pkgWordCount,
-						timeInCycles,
-						ipAddress0);
+						ipAddress0,
+						dataFromEndpoint,
+						dataToEndpoint
+					);
 
-		if (!listenPort.empty())
-		{
+		if (!listenPort.empty()) {
 			ap_uint<16> port = listenPort.read();
 			std::cout << "Port " << port << " openend." << std::endl;
 			listenPortStatus.write(true);
 		}
 
-		if (!openConnection.empty())
-		{
+		if (!openConnection.empty()) {
 			openConnection.read();
 			std::cout << "Opening connection.. at cycle" << count << std::endl;
 			openConStatus.write(openStatus(123+count, true));
 		}
-		if (!txMetaData.empty())
-		{
+
+		if (!txMetaData.empty()) {
 			appTxMeta meta = txMetaData.read();
-			std::cout << "New Pkg: " << std::dec << meta.sessionID << ", length[B]: " << meta.length << std::endl;
+			std::cout << "txMeataData New Pkg: " << std::dec << meta.sessionID << ", length[B]: " << meta.length << std::endl;
+
 			int toss = rand() % 2;
 			toss = (toss == 0 || meta.length == IPERF_TCP_HEADER_SIZE/8) ? 0 : -1;
 			std::cout << "toss: " << toss << std::endl;
 			txStatus.write(appTxRsp(meta.sessionID, meta.length, 0xFFFF, toss));
 		}
-		while (!txData.empty())
-		{
+
+		while (!txData.empty()) {
 			net_axis<DATA_WIDTH> currWord = txData.read();
 			printLE(std::cout, currWord);
 			std::cout << std::endl;
 
 		}
-		if (!closeConnection.empty())
-		{
+
+		if (!closeConnection.empty()) {
 			ap_uint<16> sessionID = closeConnection.read();
 			std::cout << "Closing connection: " << std::dec << sessionID << std::endl;
 		}
