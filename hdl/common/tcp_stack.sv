@@ -159,273 +159,273 @@ assign m_axis_mem_read_cmd[ddrPortNetworkTx].length = {9'h00, axis_read_cmd_data
 
 //TOE Module with RX_DDR_BYPASS disabled
 if (RX_DDR_BYPASS_EN == 0) begin
-toe_ip toe_inst (
-// Data output
-.m_axis_tcp_data_TVALID(m_axis_tx_data.valid),
-.m_axis_tcp_data_TREADY(m_axis_tx_data.ready),
-.m_axis_tcp_data_TDATA(m_axis_tx_data.data), // output [63 : 0] AXI_M_Stream_TDATA
-.m_axis_tcp_data_TKEEP(m_axis_tx_data.keep),
-.m_axis_tcp_data_TLAST(m_axis_tx_data.last),
-// Data input
-.s_axis_tcp_data_TVALID(s_axis_rx_data.valid),
-.s_axis_tcp_data_TREADY(s_axis_rx_data.ready),
-.s_axis_tcp_data_TDATA(s_axis_rx_data.data),
-.s_axis_tcp_data_TKEEP(s_axis_rx_data.keep),
-.s_axis_tcp_data_TLAST(s_axis_rx_data.last),
-
-// rx read commands
-.m_axis_rxread_cmd_V_TVALID(m_axis_mem_read_cmd[ddrPortNetworkRx].valid),
-.m_axis_rxread_cmd_V_TREADY(m_axis_mem_read_cmd[ddrPortNetworkRx].ready),
-.m_axis_rxread_cmd_V_TDATA(axis_read_cmd_data[ddrPortNetworkRx]),
-// rx write commands
-.m_axis_rxwrite_cmd_V_TVALID(m_axis_mem_write_cmd[ddrPortNetworkRx].valid),
-.m_axis_rxwrite_cmd_V_TREADY(m_axis_mem_write_cmd[ddrPortNetworkRx].ready),
-.m_axis_rxwrite_cmd_V_TDATA(axis_write_cmd_data[ddrPortNetworkRx]),
-// rx write status
-.s_axis_rxwrite_sts_V_TVALID(s_axis_mem_write_sts[ddrPortNetworkRx].valid),
-.s_axis_rxwrite_sts_V_TREADY(s_axis_mem_write_sts[ddrPortNetworkRx].ready),
-.s_axis_rxwrite_sts_V_TDATA(s_axis_mem_write_sts[ddrPortNetworkRx].data),
-// rx buffer read path
-.s_axis_rxread_data_TVALID(axis_rxread_data.valid),
-.s_axis_rxread_data_TREADY(axis_rxread_data.ready),
-.s_axis_rxread_data_TDATA(axis_rxread_data.data),
-.s_axis_rxread_data_TKEEP(axis_rxread_data.keep),
-.s_axis_rxread_data_TLAST(axis_rxread_data.last),
-// rx buffer write path
-.m_axis_rxwrite_data_TVALID(axis_rxwrite_data.valid),
-.m_axis_rxwrite_data_TREADY(axis_rxwrite_data.ready),
-.m_axis_rxwrite_data_TDATA(axis_rxwrite_data.data),
-.m_axis_rxwrite_data_TKEEP(axis_rxwrite_data.keep),
-.m_axis_rxwrite_data_TLAST(axis_rxwrite_data.last),
-
-// tx read commands
-.m_axis_txread_cmd_V_TVALID(m_axis_mem_read_cmd[ddrPortNetworkTx].valid),
-.m_axis_txread_cmd_V_TREADY(m_axis_mem_read_cmd[ddrPortNetworkTx].ready),
-.m_axis_txread_cmd_V_TDATA(axis_read_cmd_data[ddrPortNetworkTx]),
-//tx write commands
-.m_axis_txwrite_cmd_V_TVALID(m_axis_mem_write_cmd[ddrPortNetworkTx].valid),
-.m_axis_txwrite_cmd_V_TREADY(m_axis_mem_write_cmd[ddrPortNetworkTx].ready),
-.m_axis_txwrite_cmd_V_TDATA(axis_write_cmd_data[ddrPortNetworkTx]),
-// tx write status
-.s_axis_txwrite_sts_V_TVALID(s_axis_mem_write_sts[ddrPortNetworkTx].valid),
-.s_axis_txwrite_sts_V_TREADY(s_axis_mem_write_sts[ddrPortNetworkTx].ready),
-.s_axis_txwrite_sts_V_TDATA(s_axis_mem_write_sts[ddrPortNetworkTx].data),
-// tx read path
-.s_axis_txread_data_TVALID(axis_txread_data.valid),
-.s_axis_txread_data_TREADY(axis_txread_data.ready),
-.s_axis_txread_data_TDATA(axis_txread_data.data),
-.s_axis_txread_data_TKEEP(axis_txread_data.keep),
-.s_axis_txread_data_TLAST(axis_txread_data.last),
-// tx write path
-.m_axis_txwrite_data_TVALID(axis_txwrite_data.valid),
-.m_axis_txwrite_data_TREADY(axis_txwrite_data.ready),
-.m_axis_txwrite_data_TDATA(axis_txwrite_data.data),
-.m_axis_txwrite_data_TKEEP(axis_txwrite_data.keep),
-.m_axis_txwrite_data_TLAST(axis_txwrite_data.last),
-/// SmartCAM I/F ///
-.m_axis_session_upd_req_V_TVALID(axis_ht_upd_req.valid),
-.m_axis_session_upd_req_V_TREADY(axis_ht_upd_req.ready),
-.m_axis_session_upd_req_V_TDATA(axis_ht_upd_req.data),
-
-.s_axis_session_upd_rsp_V_TVALID(axis_ht_upd_rsp.valid),
-.s_axis_session_upd_rsp_V_TREADY(axis_ht_upd_rsp.ready),
-.s_axis_session_upd_rsp_V_TDATA(axis_ht_upd_rsp.data),
-
-.m_axis_session_lup_req_V_TVALID(axis_ht_lup_req.valid),
-.m_axis_session_lup_req_V_TREADY(axis_ht_lup_req.ready),
-.m_axis_session_lup_req_V_TDATA(axis_ht_lup_req.data),
-.s_axis_session_lup_rsp_V_TVALID(axis_ht_lup_rsp.valid),
-.s_axis_session_lup_rsp_V_TREADY(axis_ht_lup_rsp.ready),
-.s_axis_session_lup_rsp_V_TDATA(axis_ht_lup_rsp.data),
-
-/* Application Interface */
-// listen&close port
-.s_axis_listen_port_req_V_V_TVALID(axis_listen_port.valid),
-.s_axis_listen_port_req_V_V_TREADY(axis_listen_port.ready),
-.s_axis_listen_port_req_V_V_TDATA(axis_listen_port.data),
-.m_axis_listen_port_rsp_V_TVALID(axis_listen_port_status.valid),
-.m_axis_listen_port_rsp_V_TREADY(axis_listen_port_status.ready),
-.m_axis_listen_port_rsp_V_TDATA(axis_listen_port_status.data),
-
-// notification & read request
-.m_axis_notification_V_TVALID(axis_notifications.valid),
-.m_axis_notification_V_TREADY(axis_notifications.ready),
-.m_axis_notification_V_TDATA(axis_notifications.data),
-.s_axis_rx_data_req_V_TVALID(axis_read_package.valid),
-.s_axis_rx_data_req_V_TREADY(axis_read_package.ready),
-.s_axis_rx_data_req_V_TDATA(axis_read_package.data),
-
-// open&close connection
-.s_axis_open_conn_req_V_TVALID(axis_open_connection.valid),
-.s_axis_open_conn_req_V_TREADY(axis_open_connection.ready),
-.s_axis_open_conn_req_V_TDATA(axis_open_connection.data),
-.m_axis_open_conn_rsp_V_TVALID(axis_open_status.valid),
-.m_axis_open_conn_rsp_V_TREADY(axis_open_status.ready),
-.m_axis_open_conn_rsp_V_TDATA(axis_open_status.data),
-.s_axis_close_conn_req_V_V_TVALID(axis_close_connection.valid),
-.s_axis_close_conn_req_V_V_TREADY(axis_close_connection.ready),
-.s_axis_close_conn_req_V_V_TDATA(axis_close_connection.data),
-
-// rx data
-.m_axis_rx_data_rsp_metadata_V_V_TVALID(axis_rx_metadata.valid),
-.m_axis_rx_data_rsp_metadata_V_V_TREADY(axis_rx_metadata.ready),
-.m_axis_rx_data_rsp_metadata_V_V_TDATA(axis_rx_metadata.data),
-.m_axis_rx_data_rsp_TVALID(m_axis_rx_data.valid),
-.m_axis_rx_data_rsp_TREADY(m_axis_rx_data.ready),
-.m_axis_rx_data_rsp_TDATA(m_axis_rx_data.data),
-.m_axis_rx_data_rsp_TKEEP(m_axis_rx_data.keep),
-.m_axis_rx_data_rsp_TLAST(m_axis_rx_data.last),
-
-// tx data
-.s_axis_tx_data_req_metadata_V_TVALID(axis_tx_metadata.valid),
-.s_axis_tx_data_req_metadata_V_TREADY(axis_tx_metadata.ready),
-.s_axis_tx_data_req_metadata_V_TDATA(axis_tx_metadata.data),
-.s_axis_tx_data_req_TVALID(s_axis_tx_data.valid),
-.s_axis_tx_data_req_TREADY(s_axis_tx_data.ready),
-.s_axis_tx_data_req_TDATA(s_axis_tx_data.data),
-.s_axis_tx_data_req_TKEEP(s_axis_tx_data.keep),
-.s_axis_tx_data_req_TLAST(s_axis_tx_data.last),
-.m_axis_tx_data_rsp_V_TVALID(m_axis_tx_status.valid),
-.m_axis_tx_data_rsp_V_TREADY(m_axis_tx_status.ready),
-.m_axis_tx_data_rsp_V_TDATA(m_axis_tx_status.data),
-
-.myIpAddress_V(local_ip_address),
-.regSessionCount_V(session_count_data),
-.regSessionCount_V_ap_vld(session_count_valid),
-.ap_clk(net_clk),                                                        // input aclk
-.ap_rst_n(net_aresetn)                                                   // input aresetn
-);
+/* toe_ip toe_inst ( */
+/* // Data output */
+/* .m_axis_tcp_data_TVALID(m_axis_tx_data.valid), */
+/* .m_axis_tcp_data_TREADY(m_axis_tx_data.ready), */
+/* .m_axis_tcp_data_TDATA(m_axis_tx_data.data), // output [63 : 0] AXI_M_Stream_TDATA */
+/* .m_axis_tcp_data_TKEEP(m_axis_tx_data.keep), */
+/* .m_axis_tcp_data_TLAST(m_axis_tx_data.last), */
+/* // Data input */
+/* .s_axis_tcp_data_TVALID(s_axis_rx_data.valid), */
+/* .s_axis_tcp_data_TREADY(s_axis_rx_data.ready), */
+/* .s_axis_tcp_data_TDATA(s_axis_rx_data.data), */
+/* .s_axis_tcp_data_TKEEP(s_axis_rx_data.keep), */
+/* .s_axis_tcp_data_TLAST(s_axis_rx_data.last), */
+/*  */
+/* // rx read commands */
+/* .m_axis_rxread_cmd_V_TVALID(m_axis_mem_read_cmd[ddrPortNetworkRx].valid), */
+/* .m_axis_rxread_cmd_V_TREADY(m_axis_mem_read_cmd[ddrPortNetworkRx].ready), */
+/* .m_axis_rxread_cmd_V_TDATA(axis_read_cmd_data[ddrPortNetworkRx]), */
+/* // rx write commands */
+/* .m_axis_rxwrite_cmd_V_TVALID(m_axis_mem_write_cmd[ddrPortNetworkRx].valid), */
+/* .m_axis_rxwrite_cmd_V_TREADY(m_axis_mem_write_cmd[ddrPortNetworkRx].ready), */
+/* .m_axis_rxwrite_cmd_V_TDATA(axis_write_cmd_data[ddrPortNetworkRx]), */
+/* // rx write status */
+/* .s_axis_rxwrite_sts_V_TVALID(s_axis_mem_write_sts[ddrPortNetworkRx].valid), */
+/* .s_axis_rxwrite_sts_V_TREADY(s_axis_mem_write_sts[ddrPortNetworkRx].ready), */
+/* .s_axis_rxwrite_sts_V_TDATA(s_axis_mem_write_sts[ddrPortNetworkRx].data), */
+/* // rx buffer read path */
+/* .s_axis_rxread_data_TVALID(axis_rxread_data.valid), */
+/* .s_axis_rxread_data_TREADY(axis_rxread_data.ready), */
+/* .s_axis_rxread_data_TDATA(axis_rxread_data.data), */
+/* .s_axis_rxread_data_TKEEP(axis_rxread_data.keep), */
+/* .s_axis_rxread_data_TLAST(axis_rxread_data.last), */
+/* // rx buffer write path */
+/* .m_axis_rxwrite_data_TVALID(axis_rxwrite_data.valid), */
+/* .m_axis_rxwrite_data_TREADY(axis_rxwrite_data.ready), */
+/* .m_axis_rxwrite_data_TDATA(axis_rxwrite_data.data), */
+/* .m_axis_rxwrite_data_TKEEP(axis_rxwrite_data.keep), */
+/* .m_axis_rxwrite_data_TLAST(axis_rxwrite_data.last), */
+/*  */
+/* // tx read commands */
+/* .m_axis_txread_cmd_V_TVALID(m_axis_mem_read_cmd[ddrPortNetworkTx].valid), */
+/* .m_axis_txread_cmd_V_TREADY(m_axis_mem_read_cmd[ddrPortNetworkTx].ready), */
+/* .m_axis_txread_cmd_V_TDATA(axis_read_cmd_data[ddrPortNetworkTx]), */
+/* //tx write commands */
+/* .m_axis_txwrite_cmd_V_TVALID(m_axis_mem_write_cmd[ddrPortNetworkTx].valid), */
+/* .m_axis_txwrite_cmd_V_TREADY(m_axis_mem_write_cmd[ddrPortNetworkTx].ready), */
+/* .m_axis_txwrite_cmd_V_TDATA(axis_write_cmd_data[ddrPortNetworkTx]), */
+/* // tx write status */
+/* .s_axis_txwrite_sts_V_TVALID(s_axis_mem_write_sts[ddrPortNetworkTx].valid), */
+/* .s_axis_txwrite_sts_V_TREADY(s_axis_mem_write_sts[ddrPortNetworkTx].ready), */
+/* .s_axis_txwrite_sts_V_TDATA(s_axis_mem_write_sts[ddrPortNetworkTx].data), */
+/* // tx read path */
+/* .s_axis_txread_data_TVALID(axis_txread_data.valid), */
+/* .s_axis_txread_data_TREADY(axis_txread_data.ready), */
+/* .s_axis_txread_data_TDATA(axis_txread_data.data), */
+/* .s_axis_txread_data_TKEEP(axis_txread_data.keep), */
+/* .s_axis_txread_data_TLAST(axis_txread_data.last), */
+/* // tx write path */
+/* .m_axis_txwrite_data_TVALID(axis_txwrite_data.valid), */
+/* .m_axis_txwrite_data_TREADY(axis_txwrite_data.ready), */
+/* .m_axis_txwrite_data_TDATA(axis_txwrite_data.data), */
+/* .m_axis_txwrite_data_TKEEP(axis_txwrite_data.keep), */
+/* .m_axis_txwrite_data_TLAST(axis_txwrite_data.last), */
+/* /// SmartCAM I/F /// */
+/* .m_axis_session_upd_req_V_TVALID(axis_ht_upd_req.valid), */
+/* .m_axis_session_upd_req_V_TREADY(axis_ht_upd_req.ready), */
+/* .m_axis_session_upd_req_V_TDATA(axis_ht_upd_req.data), */
+/*  */
+/* .s_axis_session_upd_rsp_V_TVALID(axis_ht_upd_rsp.valid), */
+/* .s_axis_session_upd_rsp_V_TREADY(axis_ht_upd_rsp.ready), */
+/* .s_axis_session_upd_rsp_V_TDATA(axis_ht_upd_rsp.data), */
+/*  */
+/* .m_axis_session_lup_req_V_TVALID(axis_ht_lup_req.valid), */
+/* .m_axis_session_lup_req_V_TREADY(axis_ht_lup_req.ready), */
+/* .m_axis_session_lup_req_V_TDATA(axis_ht_lup_req.data), */
+/* .s_axis_session_lup_rsp_V_TVALID(axis_ht_lup_rsp.valid), */
+/* .s_axis_session_lup_rsp_V_TREADY(axis_ht_lup_rsp.ready), */
+/* .s_axis_session_lup_rsp_V_TDATA(axis_ht_lup_rsp.data), */
+/*  */
+/* [> Application Interface <] */
+/* // listen&close port */
+/* .s_axis_listen_port_req_V_V_TVALID(axis_listen_port.valid), */
+/* .s_axis_listen_port_req_V_V_TREADY(axis_listen_port.ready), */
+/* .s_axis_listen_port_req_V_V_TDATA(axis_listen_port.data), */
+/* .m_axis_listen_port_rsp_V_TVALID(axis_listen_port_status.valid), */
+/* .m_axis_listen_port_rsp_V_TREADY(axis_listen_port_status.ready), */
+/* .m_axis_listen_port_rsp_V_TDATA(axis_listen_port_status.data), */
+/*  */
+/* // notification & read request */
+/* .m_axis_notification_V_TVALID(axis_notifications.valid), */
+/* .m_axis_notification_V_TREADY(axis_notifications.ready), */
+/* .m_axis_notification_V_TDATA(axis_notifications.data), */
+/* .s_axis_rx_data_req_V_TVALID(axis_read_package.valid), */
+/* .s_axis_rx_data_req_V_TREADY(axis_read_package.ready), */
+/* .s_axis_rx_data_req_V_TDATA(axis_read_package.data), */
+/*  */
+/* // open&close connection */
+/* .s_axis_open_conn_req_V_TVALID(axis_open_connection.valid), */
+/* .s_axis_open_conn_req_V_TREADY(axis_open_connection.ready), */
+/* .s_axis_open_conn_req_V_TDATA(axis_open_connection.data), */
+/* .m_axis_open_conn_rsp_V_TVALID(axis_open_status.valid), */
+/* .m_axis_open_conn_rsp_V_TREADY(axis_open_status.ready), */
+/* .m_axis_open_conn_rsp_V_TDATA(axis_open_status.data), */
+/* .s_axis_close_conn_req_V_V_TVALID(axis_close_connection.valid), */
+/* .s_axis_close_conn_req_V_V_TREADY(axis_close_connection.ready), */
+/* .s_axis_close_conn_req_V_V_TDATA(axis_close_connection.data), */
+/*  */
+/* // rx data */
+/* .m_axis_rx_data_rsp_metadata_V_V_TVALID(axis_rx_metadata.valid), */
+/* .m_axis_rx_data_rsp_metadata_V_V_TREADY(axis_rx_metadata.ready), */
+/* .m_axis_rx_data_rsp_metadata_V_V_TDATA(axis_rx_metadata.data), */
+/* .m_axis_rx_data_rsp_TVALID(m_axis_rx_data.valid), */
+/* .m_axis_rx_data_rsp_TREADY(m_axis_rx_data.ready), */
+/* .m_axis_rx_data_rsp_TDATA(m_axis_rx_data.data), */
+/* .m_axis_rx_data_rsp_TKEEP(m_axis_rx_data.keep), */
+/* .m_axis_rx_data_rsp_TLAST(m_axis_rx_data.last), */
+/*  */
+/* // tx data */
+/* .s_axis_tx_data_req_metadata_V_TVALID(axis_tx_metadata.valid), */
+/* .s_axis_tx_data_req_metadata_V_TREADY(axis_tx_metadata.ready), */
+/* .s_axis_tx_data_req_metadata_V_TDATA(axis_tx_metadata.data), */
+/* .s_axis_tx_data_req_TVALID(s_axis_tx_data.valid), */
+/* .s_axis_tx_data_req_TREADY(s_axis_tx_data.ready), */
+/* .s_axis_tx_data_req_TDATA(s_axis_tx_data.data), */
+/* .s_axis_tx_data_req_TKEEP(s_axis_tx_data.keep), */
+/* .s_axis_tx_data_req_TLAST(s_axis_tx_data.last), */
+/* .m_axis_tx_data_rsp_V_TVALID(m_axis_tx_status.valid), */
+/* .m_axis_tx_data_rsp_V_TREADY(m_axis_tx_status.ready), */
+/* .m_axis_tx_data_rsp_V_TDATA(m_axis_tx_status.data), */
+/*  */
+/* .myIpAddress_V(local_ip_address), */
+/* .regSessionCount_V(session_count_data), */
+/* .regSessionCount_V_ap_vld(session_count_valid), */
+/* .ap_clk(net_clk),                                                        // input aclk */
+/* .ap_rst_n(net_aresetn)                                                   // input aresetn */
+/* ); */
 end
 else begin //RX_DDR_BYPASS_EN == 1
 
 //TOE Module with RX_DDR_BYPASS enabled
 toe_ip toe_inst (
-// Data output
-.m_axis_tcp_data_TVALID(m_axis_tx_data.valid),
-.m_axis_tcp_data_TREADY(m_axis_tx_data.ready),
-.m_axis_tcp_data_TDATA(m_axis_tx_data.data), // output [63 : 0] AXI_M_Stream_TDATA
-.m_axis_tcp_data_TKEEP(m_axis_tx_data.keep),
-.m_axis_tcp_data_TLAST(m_axis_tx_data.last),
-// Data input
-.s_axis_tcp_data_TVALID(s_axis_rx_data.valid),
-.s_axis_tcp_data_TREADY(s_axis_rx_data.ready),
-.s_axis_tcp_data_TDATA(s_axis_rx_data.data),
-.s_axis_tcp_data_TKEEP(s_axis_rx_data.keep),
-.s_axis_tcp_data_TLAST(s_axis_rx_data.last),
+    // Data output
+    .m_axis_tcp_data_TVALID(m_axis_tx_data.valid),
+    .m_axis_tcp_data_TREADY(m_axis_tx_data.ready),
+    .m_axis_tcp_data_TDATA(m_axis_tx_data.data), // output [63 : 0] AXI_M_Stream_TDATA
+    .m_axis_tcp_data_TKEEP(m_axis_tx_data.keep),
+    .m_axis_tcp_data_TLAST(m_axis_tx_data.last),
+    // Data input
+    .s_axis_tcp_data_TVALID(s_axis_rx_data.valid),
+    .s_axis_tcp_data_TREADY(s_axis_rx_data.ready),
+    .s_axis_tcp_data_TDATA(s_axis_rx_data.data),
+    .s_axis_tcp_data_TKEEP(s_axis_rx_data.keep),
+    .s_axis_tcp_data_TLAST(s_axis_rx_data.last),
 
-// rx buffer read path
-.s_axis_rxread_data_TVALID(axis_rxbuffer2app.valid),
-.s_axis_rxread_data_TREADY(axis_rxbuffer2app.ready),
-.s_axis_rxread_data_TDATA(axis_rxbuffer2app.data),
-.s_axis_rxread_data_TKEEP(axis_rxbuffer2app.keep),
-.s_axis_rxread_data_TLAST(axis_rxbuffer2app.last),
-// rx buffer write path
-.m_axis_rxwrite_data_TVALID(axis_tcp2rxbuffer.valid),
-.m_axis_rxwrite_data_TREADY(axis_tcp2rxbuffer.ready),
-.m_axis_rxwrite_data_TDATA(axis_tcp2rxbuffer.data),
-.m_axis_rxwrite_data_TKEEP(axis_tcp2rxbuffer.keep),
-.m_axis_rxwrite_data_TLAST(axis_tcp2rxbuffer.last),
+    // rx buffer read path
+    .s_axis_rxread_data_TVALID(axis_rxbuffer2app.valid),
+    .s_axis_rxread_data_TREADY(axis_rxbuffer2app.ready),
+    .s_axis_rxread_data_TDATA(axis_rxbuffer2app.data),
+    .s_axis_rxread_data_TKEEP(axis_rxbuffer2app.keep),
+    .s_axis_rxread_data_TLAST(axis_rxbuffer2app.last),
+    // rx buffer write path
+    .m_axis_rxwrite_data_TVALID(axis_tcp2rxbuffer.valid),
+    .m_axis_rxwrite_data_TREADY(axis_tcp2rxbuffer.ready),
+    .m_axis_rxwrite_data_TDATA(axis_tcp2rxbuffer.data),
+    .m_axis_rxwrite_data_TKEEP(axis_tcp2rxbuffer.keep),
+    .m_axis_rxwrite_data_TLAST(axis_tcp2rxbuffer.last),
 
-// tx read commands
-.m_axis_txread_cmd_V_TVALID(m_axis_mem_read_cmd[ddrPortNetworkTx].valid),
-.m_axis_txread_cmd_V_TREADY(m_axis_mem_read_cmd[ddrPortNetworkTx].ready),
-.m_axis_txread_cmd_V_TDATA(axis_read_cmd_data[ddrPortNetworkTx]),
-//tx write commands
-.m_axis_txwrite_cmd_V_TVALID(m_axis_mem_write_cmd[ddrPortNetworkTx].valid),
-.m_axis_txwrite_cmd_V_TREADY(m_axis_mem_write_cmd[ddrPortNetworkTx].ready),
-.m_axis_txwrite_cmd_V_TDATA(axis_write_cmd_data[ddrPortNetworkTx]),
-// tx write status
-.s_axis_txwrite_sts_V_TVALID(s_axis_mem_write_sts[ddrPortNetworkTx].valid),
-.s_axis_txwrite_sts_V_TREADY(s_axis_mem_write_sts[ddrPortNetworkTx].ready),
-.s_axis_txwrite_sts_V_TDATA(s_axis_mem_write_sts[ddrPortNetworkTx].data),
-// tx read path
-.s_axis_txread_data_TVALID(axis_txread_data.valid),
-.s_axis_txread_data_TREADY(axis_txread_data.ready),
-.s_axis_txread_data_TDATA(axis_txread_data.data),
-.s_axis_txread_data_TKEEP(axis_txread_data.keep),
-.s_axis_txread_data_TLAST(axis_txread_data.last),
-// tx write path
-.m_axis_txwrite_data_TVALID(axis_txwrite_data.valid),
-.m_axis_txwrite_data_TREADY(axis_txwrite_data.ready),
-.m_axis_txwrite_data_TDATA(axis_txwrite_data.data),
-.m_axis_txwrite_data_TKEEP(axis_txwrite_data.keep),
-.m_axis_txwrite_data_TLAST(axis_txwrite_data.last),
-/// SmartCAM I/F ///
-.m_axis_session_upd_req_V_TVALID(axis_ht_upd_req.valid),
-.m_axis_session_upd_req_V_TREADY(axis_ht_upd_req.ready),
-.m_axis_session_upd_req_V_TDATA(axis_ht_upd_req.data),
+    // tx read commands
+    .m_axis_txread_cmd_V_TVALID(m_axis_mem_read_cmd[ddrPortNetworkTx].valid),
+    .m_axis_txread_cmd_V_TREADY(m_axis_mem_read_cmd[ddrPortNetworkTx].ready),
+    .m_axis_txread_cmd_V_TDATA(axis_read_cmd_data[ddrPortNetworkTx]),
+    //tx write commands
+    .m_axis_txwrite_cmd_V_TVALID(m_axis_mem_write_cmd[ddrPortNetworkTx].valid),
+    .m_axis_txwrite_cmd_V_TREADY(m_axis_mem_write_cmd[ddrPortNetworkTx].ready),
+    .m_axis_txwrite_cmd_V_TDATA(axis_write_cmd_data[ddrPortNetworkTx]),
+    // tx write status
+    .s_axis_txwrite_sts_V_TVALID(s_axis_mem_write_sts[ddrPortNetworkTx].valid),
+    .s_axis_txwrite_sts_V_TREADY(s_axis_mem_write_sts[ddrPortNetworkTx].ready),
+    .s_axis_txwrite_sts_V_TDATA(s_axis_mem_write_sts[ddrPortNetworkTx].data),
+    // tx read path
+    .s_axis_txread_data_TVALID(axis_txread_data.valid),
+    .s_axis_txread_data_TREADY(axis_txread_data.ready),
+    .s_axis_txread_data_TDATA(axis_txread_data.data),
+    .s_axis_txread_data_TKEEP(axis_txread_data.keep),
+    .s_axis_txread_data_TLAST(axis_txread_data.last),
+    // tx write path
+    .m_axis_txwrite_data_TVALID(axis_txwrite_data.valid),
+    .m_axis_txwrite_data_TREADY(axis_txwrite_data.ready),
+    .m_axis_txwrite_data_TDATA(axis_txwrite_data.data),
+    .m_axis_txwrite_data_TKEEP(axis_txwrite_data.keep),
+    .m_axis_txwrite_data_TLAST(axis_txwrite_data.last),
+    /// SmartCAM I/F ///
+    .m_axis_session_upd_req_V_TVALID(axis_ht_upd_req.valid),
+    .m_axis_session_upd_req_V_TREADY(axis_ht_upd_req.ready),
+    .m_axis_session_upd_req_V_TDATA(axis_ht_upd_req.data),
 
-.s_axis_session_upd_rsp_V_TVALID(axis_ht_upd_rsp.valid),
-.s_axis_session_upd_rsp_V_TREADY(axis_ht_upd_rsp.ready),
-.s_axis_session_upd_rsp_V_TDATA(axis_ht_upd_rsp.data),
+    .s_axis_session_upd_rsp_V_TVALID(axis_ht_upd_rsp.valid),
+    .s_axis_session_upd_rsp_V_TREADY(axis_ht_upd_rsp.ready),
+    .s_axis_session_upd_rsp_V_TDATA(axis_ht_upd_rsp.data),
 
-.m_axis_session_lup_req_V_TVALID(axis_ht_lup_req.valid),
-.m_axis_session_lup_req_V_TREADY(axis_ht_lup_req.ready),
-.m_axis_session_lup_req_V_TDATA(axis_ht_lup_req.data),
-.s_axis_session_lup_rsp_V_TVALID(axis_ht_lup_rsp.valid),
-.s_axis_session_lup_rsp_V_TREADY(axis_ht_lup_rsp.ready),
-.s_axis_session_lup_rsp_V_TDATA(axis_ht_lup_rsp.data),
+    .m_axis_session_lup_req_V_TVALID(axis_ht_lup_req.valid),
+    .m_axis_session_lup_req_V_TREADY(axis_ht_lup_req.ready),
+    .m_axis_session_lup_req_V_TDATA(axis_ht_lup_req.data),
+    .s_axis_session_lup_rsp_V_TVALID(axis_ht_lup_rsp.valid),
+    .s_axis_session_lup_rsp_V_TREADY(axis_ht_lup_rsp.ready),
+    .s_axis_session_lup_rsp_V_TDATA(axis_ht_lup_rsp.data),
 
-/* Application Interface */
-// listen&close port
-.s_axis_listen_port_req_V_V_TVALID(axis_listen_port.valid),
-.s_axis_listen_port_req_V_V_TREADY(axis_listen_port.ready),
-.s_axis_listen_port_req_V_V_TDATA(axis_listen_port.data),
-.m_axis_listen_port_rsp_V_TVALID(axis_listen_port_status.valid),
-.m_axis_listen_port_rsp_V_TREADY(axis_listen_port_status.ready),
-.m_axis_listen_port_rsp_V_TDATA(axis_listen_port_status.data),
+    /* Application Interface */
+    // listen&close port
+    .s_axis_listen_port_req_V_V_TVALID(axis_listen_port.valid),
+    .s_axis_listen_port_req_V_V_TREADY(axis_listen_port.ready),
+    .s_axis_listen_port_req_V_V_TDATA(axis_listen_port.data),
+    .m_axis_listen_port_rsp_V_TVALID(axis_listen_port_status.valid),
+    .m_axis_listen_port_rsp_V_TREADY(axis_listen_port_status.ready),
+    .m_axis_listen_port_rsp_V_TDATA(axis_listen_port_status.data),
 
-// notification & read request
-.m_axis_notification_V_TVALID(axis_notifications.valid),
-.m_axis_notification_V_TREADY(axis_notifications.ready),
-.m_axis_notification_V_TDATA(axis_notifications.data),
-.s_axis_rx_data_req_V_TVALID(axis_read_package.valid),
-.s_axis_rx_data_req_V_TREADY(axis_read_package.ready),
-.s_axis_rx_data_req_V_TDATA(axis_read_package.data),
+    // notification & read request
+    .m_axis_notification_V_TVALID(axis_notifications.valid),
+    .m_axis_notification_V_TREADY(axis_notifications.ready),
+    .m_axis_notification_V_TDATA(axis_notifications.data),
+    .s_axis_rx_data_req_V_TVALID(axis_read_package.valid),
+    .s_axis_rx_data_req_V_TREADY(axis_read_package.ready),
+    .s_axis_rx_data_req_V_TDATA(axis_read_package.data),
 
-// open&close connection
-.s_axis_open_conn_req_V_TVALID(axis_open_connection.valid),
-.s_axis_open_conn_req_V_TREADY(axis_open_connection.ready),
-.s_axis_open_conn_req_V_TDATA(axis_open_connection.data),
-.m_axis_open_conn_rsp_V_TVALID(axis_open_status.valid),
-.m_axis_open_conn_rsp_V_TREADY(axis_open_status.ready),
-.m_axis_open_conn_rsp_V_TDATA(axis_open_status.data),
-.s_axis_close_conn_req_V_V_TVALID(axis_close_connection.valid),
-.s_axis_close_conn_req_V_V_TREADY(axis_close_connection.ready),
-.s_axis_close_conn_req_V_V_TDATA(axis_close_connection.data),
+    // open&close connection
+    .s_axis_open_conn_req_V_TVALID(axis_open_connection.valid),
+    .s_axis_open_conn_req_V_TREADY(axis_open_connection.ready),
+    .s_axis_open_conn_req_V_TDATA(axis_open_connection.data),
+    .m_axis_open_conn_rsp_V_TVALID(axis_open_status.valid),
+    .m_axis_open_conn_rsp_V_TREADY(axis_open_status.ready),
+    .m_axis_open_conn_rsp_V_TDATA(axis_open_status.data),
+    .s_axis_close_conn_req_V_V_TVALID(axis_close_connection.valid),
+    .s_axis_close_conn_req_V_V_TREADY(axis_close_connection.ready),
+    .s_axis_close_conn_req_V_V_TDATA(axis_close_connection.data),
 
-// rx data
-.m_axis_rx_data_rsp_metadata_V_V_TVALID(axis_rx_metadata.valid),
-.m_axis_rx_data_rsp_metadata_V_V_TREADY(axis_rx_metadata.ready),
-.m_axis_rx_data_rsp_metadata_V_V_TDATA(axis_rx_metadata.data),
-.m_axis_rx_data_rsp_TVALID(m_axis_rx_data.valid),
-.m_axis_rx_data_rsp_TREADY(m_axis_rx_data.ready),
-.m_axis_rx_data_rsp_TDATA(m_axis_rx_data.data),
-.m_axis_rx_data_rsp_TKEEP(m_axis_rx_data.keep),
-.m_axis_rx_data_rsp_TLAST(m_axis_rx_data.last),
+    // rx data
+    .m_axis_rx_data_rsp_metadata_V_V_TVALID(axis_rx_metadata.valid),
+    .m_axis_rx_data_rsp_metadata_V_V_TREADY(axis_rx_metadata.ready),
+    .m_axis_rx_data_rsp_metadata_V_V_TDATA(axis_rx_metadata.data),
+    .m_axis_rx_data_rsp_TVALID(m_axis_rx_data.valid),
+    .m_axis_rx_data_rsp_TREADY(m_axis_rx_data.ready),
+    .m_axis_rx_data_rsp_TDATA(m_axis_rx_data.data),
+    .m_axis_rx_data_rsp_TKEEP(m_axis_rx_data.keep),
+    .m_axis_rx_data_rsp_TLAST(m_axis_rx_data.last),
 
-// tx data
-.s_axis_tx_data_req_metadata_V_TVALID(axis_tx_metadata.valid),
-.s_axis_tx_data_req_metadata_V_TREADY(axis_tx_metadata.ready),
-.s_axis_tx_data_req_metadata_V_TDATA(axis_tx_metadata.data),
-.s_axis_tx_data_req_TVALID(s_axis_tx_data.valid),
-.s_axis_tx_data_req_TREADY(s_axis_tx_data.ready),
-.s_axis_tx_data_req_TDATA(s_axis_tx_data.data),
-.s_axis_tx_data_req_TKEEP(s_axis_tx_data.keep),
-.s_axis_tx_data_req_TLAST(s_axis_tx_data.last),
-.m_axis_tx_data_rsp_V_TVALID(m_axis_tx_status.valid),
-.m_axis_tx_data_rsp_V_TREADY(m_axis_tx_status.ready),
-.m_axis_tx_data_rsp_V_TDATA(m_axis_tx_status.data),
+    // tx data
+    .s_axis_tx_data_req_metadata_V_TVALID(axis_tx_metadata.valid),
+    .s_axis_tx_data_req_metadata_V_TREADY(axis_tx_metadata.ready),
+    .s_axis_tx_data_req_metadata_V_TDATA(axis_tx_metadata.data),
+    .s_axis_tx_data_req_TVALID(s_axis_tx_data.valid),
+    .s_axis_tx_data_req_TREADY(s_axis_tx_data.ready),
+    .s_axis_tx_data_req_TDATA(s_axis_tx_data.data),
+    .s_axis_tx_data_req_TKEEP(s_axis_tx_data.keep),
+    .s_axis_tx_data_req_TLAST(s_axis_tx_data.last),
+    .m_axis_tx_data_rsp_V_TVALID(m_axis_tx_status.valid),
+    .m_axis_tx_data_rsp_V_TREADY(m_axis_tx_status.ready),
+    .m_axis_tx_data_rsp_V_TDATA(m_axis_tx_status.data),
 
-.myIpAddress_V(local_ip_address),
-.regSessionCount_V(session_count_data),
-.regSessionCount_V_ap_vld(session_count_valid),
-//for external RX Buffer
-.axis_data_count_V(rx_buffer_data_count_reg2),
-.axis_max_data_count_V(16'd1024),
+    .myIpAddress_V(local_ip_address),
+    .regSessionCount_V(session_count_data),
+    .regSessionCount_V_ap_vld(session_count_valid),
+    //for external RX Buffer
+    .axis_data_count_V(rx_buffer_data_count_reg2),
+    .axis_max_data_count_V(16'd1024),
 
-.ap_clk(net_clk),                                                        // input aclk
-.ap_rst_n(net_aresetn)                                                   // input aresetn
+    .ap_clk(net_clk),                                                        // input aclk
+    .ap_rst_n(net_aresetn)                                                   // input aresetn
 );
 end //RX_DDR_BYPASS_EN
 

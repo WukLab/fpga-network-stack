@@ -18,30 +18,63 @@ int main()
 	hls::stream<appTxMeta> txMetaData("txMetaData");
 	hls::stream<net_axis<DATA_WIDTH> > txData("txData");
 	hls::stream<appTxRsp> txStatus("txStatus");
-	ap_uint<1> runExperiment;
-	ap_uint<13> useConn;
-	ap_uint<8> pkgWordCount;
-
-	ap_uint<32> ipAddress0 = 0x01010101;
-
-	pkgWordCount = 8;
 
 	hls::stream<net_axis<DATA_WIDTH> > dataFromEndpoint("dataFromEndpoint");
 	hls::stream<net_axis<DATA_WIDTH> > dataToEndpoint("dataToEndpoint");
 
+	net_axis<DATA_WIDTH> input;
+	input.last = 1;
+	input.keep = 0xFFFFFFFFFFFFFFFF;
+	input.data(1, 0) = 0;
+	input.data(32,1) = 0;
+	input.data(47,32) = 0;
+
+	dataFromEndpoint.write(input);
+
+	input.data(1, 0) = 2;
+	dataFromEndpoint.write(input);
+	dataFromEndpoint.write(input);
+
+	input.last = 0;
+	dataFromEndpoint.write(input);
+	dataFromEndpoint.write(input);
+	input.last = 1;
+	dataFromEndpoint.write(input);
+
+	input.data(1,0) = 1;
+	input.last = 1;
+	dataFromEndpoint.write(input);
+
 	int count = 0;
-	while (count < 10000) {
-		useConn = 1;
-		runExperiment = 0;
-
-		if (count == 20) {
-			runExperiment = 1;
-		}
-
+	while (count < 1000) {
 		snic_handler(listenPort, listenPortStatus, notifications, readRequest, rxMetaData,
 			     rxData, openConnection, openConStatus, closeConnection, txMetaData,
-			     txData, txStatus, runExperiment, useConn, pkgWordCount,
+			     txData, txStatus,
 			     dataFromEndpoint, dataToEndpoint);
+
+		if (count == 500) {
+			appNotification n;
+
+			n.sessionID = 0;
+			n.length = 64;
+			notifications.write(n);
+		}
+
+		if (!readRequest.empty()) {
+			readRequest.read();
+			printf("readRequest valid: module is asking for data\n");
+			rxMetaData.write(0);
+
+			net_axis<DATA_WIDTH> d;
+			d.last = 1;
+			d.keep = 0xFFFFFFFFFFFFFFFF;
+			rxData.write(d);
+		}
+
+		if (!dataToEndpoint.empty()) {
+			dataToEndpoint.read();
+			printf("dataToEndpoint valid\n");
+		}
 
 		if (!listenPort.empty()) {
 			ap_uint<16> port = listenPort.read();
@@ -57,13 +90,10 @@ int main()
 
 		if (!txMetaData.empty()) {
 			appTxMeta meta = txMetaData.read();
-			std::cout << "txMeataData New Pkg: " << std::dec << meta.sessionID
+			std::cout << "txMeataData New Pkg Coming: " << std::dec << meta.sessionID
 				  << ", length[B]: " << meta.length << std::endl;
 
-			int toss = rand() % 2;
-			toss = (toss == 0 || meta.length == IPERF_TCP_HEADER_SIZE / 8) ? 0 : -1;
-			std::cout << "toss: " << toss << std::endl;
-			txStatus.write(appTxRsp(meta.sessionID, meta.length, 0xFFFF, toss));
+			txStatus.write(appTxRsp(meta.sessionID, meta.length, 0xFFFF, 0));
 		}
 
 		while (!txData.empty()) {

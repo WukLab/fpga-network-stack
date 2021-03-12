@@ -19,13 +19,14 @@ void buffer_txStatus(hls::stream<appTxRsp> &txStatus, hls::stream<appTxRsp> &txS
 
 	if (!txStatus.empty()) {
 		appTxRsp resp = txStatus.read();
-		txStatusBuffer.write(resp)
+		txStatusBuffer.write(resp);
 	}
 }
 
 template <int WIDTH>
-void client(hls::stream<ipTuple> &openConnection, hls::stream<openStatus> &openConStatus,
-	    hls::stream<ap_uint<16> > &closeConnection, hls::stream<appTxMeta> &txMetaData,
+void client(hls::stream<ipTuple> &openConnection,
+	    hls::stream<openStatus> &openConStatus,
+	    hls::stream<appTxMeta> &txMetaData,
 	    hls::stream<net_axis<WIDTH> > &txData,
 	    hls::stream<appTxRsp> &txStatus,
 	    hls::stream<struct internalOpenConnMeta> &internalOpenConnMeta,
@@ -59,9 +60,9 @@ void client(hls::stream<ipTuple> &openConnection, hls::stream<openStatus> &openC
 			//printf("Open status: %d sessionID: %d\n", status.success, sessionID);
 
 			/*
-		       * TODO
-		       * we should send REPLY back to host
-		       */
+		         * TODO
+		         * we should send REPLY back to host
+		         */
 			if (status.success) {
 				;
 			}
@@ -75,21 +76,18 @@ void client(hls::stream<ipTuple> &openConnection, hls::stream<openStatus> &openC
 		WAIT_TX_STATUS,
 		SEND_DATA
 	};
-       	static sendDataState sendDataState = S_IDLE;
+
+	static sendDataState sendDataState = S_IDLE;
+	static ap_uint<16> sessionID;
+	static ap_uint<16> len;
 
 	switch (sendDataState) {
 	case (S_IDLE):
 		if (!dataFromEndpoint2TCP.empty()) {
 			/*
 			 * TODO
-			 * grab sessionID and len info from the header
-			 */
-			/*
-			 * TODO
 			 * the packets from host should have sessionID included
 			 */
-			static ap_uint<16> sessionID;
-			static ap_uint<16> len;
 			txMetaData.write(appTxMeta(sessionID, len));
 			sendDataState = WAIT_TX_STATUS;
 		}
@@ -102,7 +100,7 @@ void client(hls::stream<ipTuple> &openConnection, hls::stream<openStatus> &openC
 			} else {
 				/*
 				 * Retry
-				 * (We are not dealing with closed connection)
+				 * (NOTE We are not dealing with closed connection)
 				 */
 				txMetaData.write(appTxMeta(sessionID, len));
 				sendDataState = S_IDLE;
@@ -110,6 +108,10 @@ void client(hls::stream<ipTuple> &openConnection, hls::stream<openStatus> &openC
 		}
 		break;
 	case (SEND_DATA):
+		/*
+		 * Ok, we are good to send.
+		 * Read the data and send to TCP module.
+		 */
 		if (!dataFromEndpoint2TCP.empty()) {
 			net_axis<WIDTH> data = dataFromEndpoint2TCP.read();
 			txData.write(data);
@@ -126,7 +128,8 @@ template <int WIDTH>
 void server(hls::stream<ap_uint<16> > &listenPort, hls::stream<bool> &listenPortStatus,
 	    hls::stream<appNotification> &notifications, hls::stream<appReadRequest> &readRequest,
 	    hls::stream<ap_uint<16> > &rxMetaData, hls::stream<net_axis<WIDTH> > &rxData,
-	    hls::stream<struct internalListenConnMeta> &internalListenConnMeta)
+	    hls::stream<struct internalListenConnMeta> &internalListenConnMeta,
+		hls::stream<net_axis<WIDTH> > &dataToEndpoint)
 {
 #pragma HLS PIPELINE II = 1
 #pragma HLS INLINE off
@@ -168,37 +171,49 @@ void server(hls::stream<ap_uint<16> > &listenPort, hls::stream<bool> &listenPort
 		}
 	}
 
+	/*
+	 * TODO
+	 * Those packets will go to endpoints.
+	 * We need to attach headers.
+	 *
+	 * But not sure whether the packets from TCP have headers.
+	 */
 	switch (serverFsmState) {
 	case WAIT_PKG:
 		if (!rxMetaData.empty() && !rxData.empty()) {
 			rxMetaData.read();
-			net_axis<WIDTH> receiveWord = rxData.read();
-			if (!receiveWord.last) {
+			net_axis<WIDTH> data = rxData.read();
+			if (!data.last) {
 				serverFsmState = CONSUME;
 			}
+			dataToEndpoint.write(data);
 		}
 		break;
 	case CONSUME:
 		if (!rxData.empty()) {
-			net_axis<WIDTH> receiveWord = rxData.read();
-			if (receiveWord.last) {
+			net_axis<WIDTH> data = rxData.read();
+			if (data.last) {
 				serverFsmState = WAIT_PKG;
 			}
+			dataToEndpoint.write(data);
 		}
 		break;
 	}
 }
 
+
 /*
- * We only support 64B width.
- * one flit is enough.
+ * This function parse functions sent over from endpoints.
+ * There are two type of packets:
+ * 1) control: open with a remote ip:port, and listen on a port.
+ * 2) data: packets go to TCP modules.
  */
 template <int WIDTH>
 void parse_packets(hls::stream<net_axis<WIDTH> > &dataFromEndpoint,
-		   hls::stream<net_axis<WIDTH> > &dataToEndpoint,
 		   hls::stream<struct internalOpenConnMeta> &internalOpenConnMeta,
 		   hls::stream<struct internalListenConnMeta> &internalListenConnMeta,
-		   hls::stream<net_axis<WIDTH> > &dataFromEndpoint2TCP)
+		   hls::stream<net_axis<WIDTH> > &dataFromEndpoint2TCP,
+		   hls::stream<ap_uint<16> > &closeConnection)
 {
 	struct internalOpenConnMeta open;
 	struct internalListenConnMeta listen;
@@ -207,9 +222,9 @@ void parse_packets(hls::stream<net_axis<WIDTH> > &dataFromEndpoint,
 		net_axis<WIDTH> w = dataFromEndpoint.read();
 
 		// TODO change after we decide hdr format.
-		int mode = w.data(32, 31);
-		int remote_ip = w.data(31, 0);
-		int port = w.data(15, 0);
+		int mode = w.data(1, 0);
+		int remote_ip = w.data(32, 1);
+		int port = w.data(47, 32);
 
 		if (mode == 0) {
 			open.remote_ip = remote_ip;
@@ -220,8 +235,8 @@ void parse_packets(hls::stream<net_axis<WIDTH> > &dataFromEndpoint,
 			internalListenConnMeta.write(listen);
 		} else if (mode == 2) {
 			dataFromEndpoint2TCP.write(w);
-		} else if (mode ==3 ) {
-			dataToEndpoint.write(w);
+		} else if (mode == 3) {
+			closeConnection.write(0);
 		}
 	}
 }
@@ -283,14 +298,15 @@ void snic_handler(hls::stream<ap_uint<16> > &listenPort,
 	static hls::stream<net_axis<DATA_WIDTH> > dataFromEndpoint2TCP("dataFromEndpoint2TCP");
 #pragma HLS STREAM variable = dataFromEndpoint2TCP depth = 8
 
-	parse_packets<DATA_WIDTH>(dataFromEndpoint, dataToEndpoint, internalOpenConnMeta,
-				  internalListenConnMeta, dataFromEndpoint2TCP);
-
 	buffer_txStatus(txStatus, txStatusBuffer);
 
-	client<DATA_WIDTH>(openConnection, openConStatus, closeConnection, txMetaData, txData,
+	parse_packets<DATA_WIDTH>(dataFromEndpoint, internalOpenConnMeta,
+				  internalListenConnMeta, dataFromEndpoint2TCP,
+				  closeConnection);
+
+	client<DATA_WIDTH>(openConnection, openConStatus, txMetaData, txData,
 			   txStatusBuffer, internalOpenConnMeta, dataFromEndpoint2TCP);
 
 	server<DATA_WIDTH>(listenPort, listenPortStatus, notifications, readRequest, rxMetaData, rxData,
-			   internalListenConnMeta);
+			   internalListenConnMeta, dataToEndpoint);
 }

@@ -100,6 +100,7 @@ struct appNotification
 	ap_uint<32>			ipAddress;
 	ap_uint<16>			dstPort;
 	bool				closed;
+
 	appNotification() {}
 	appNotification(ap_uint<16> id, ap_uint<16> len, ap_uint<32> addr, ap_uint<16> port)
 				:sessionID(id), length(len), ipAddress(addr), dstPort(port), closed(false) {}
@@ -133,10 +134,11 @@ struct appTxMeta
 
 struct appTxRsp
 {
-	ap_uint<16>	sessionID;
+	ap_uint<16> sessionID;
 	ap_uint<16> length;
 	ap_uint<30> remaining_space;
-	ap_uint<2>	error;
+	ap_uint<2>  error;
+
 	appTxRsp() {}
 	appTxRsp(ap_uint<16> id, ap_uint<16> len, ap_uint<30> rem_space, ap_uint<2> err)
 		:sessionID(id), length(len), remaining_space(rem_space), error(err) {}

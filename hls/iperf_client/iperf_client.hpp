@@ -86,6 +86,7 @@ struct internalAppTxRsp
 {
 	ap_uint<16>	sessionID;
 	ap_uint<2>	error;
+
 	internalAppTxRsp() {}
 	internalAppTxRsp(ap_uint<16> id, ap_uint<2> err)
 		:sessionID(id), error(err) {}
