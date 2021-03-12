@@ -40,7 +40,7 @@ int main()
 
 		snic_handler(listenPort, listenPortStatus, notifications, readRequest, rxMetaData,
 			     rxData, openConnection, openConStatus, closeConnection, txMetaData,
-			     txData, txStatus, runExperiment, useConn, pkgWordCount, ipAddress0,
+			     txData, txStatus, runExperiment, useConn, pkgWordCount,
 			     dataFromEndpoint, dataToEndpoint);
 
 		if (!listenPort.empty()) {

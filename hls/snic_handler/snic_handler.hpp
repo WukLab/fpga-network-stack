@@ -69,5 +69,5 @@ void snic_handler(hls::stream<ap_uint<16> > &listenPort, hls::stream<bool> &list
 		  hls::stream<ap_uint<16> > &closeConnection, hls::stream<appTxMeta> &txMetaData,
 		  hls::stream<net_axis<DATA_WIDTH> > &txData, hls::stream<appTxRsp> &txStatus,
 		  ap_uint<1> runExperiment, ap_uint<14> useConn, ap_uint<8> pkgWordCount,
-		  ap_uint<32> regIpAddress0, hls::stream<net_axis<DATA_WIDTH> > &dataFromEndpoint,
+		  hls::stream<net_axis<DATA_WIDTH> > &dataFromEndpoint,
 		  hls::stream<net_axis<DATA_WIDTH> > &dataToEndpoint);
