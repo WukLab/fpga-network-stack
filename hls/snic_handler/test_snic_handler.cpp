@@ -23,14 +23,29 @@ int main()
 	hls::stream<net_axis<DATA_WIDTH> > dataToEndpoint("dataToEndpoint");
 
 	net_axis<DATA_WIDTH> input;
+
+	/*
+	 * OPEN request
+	 */
 	input.last = 1;
 	input.keep = 0xFFFFFFFFFFFFFFFF;
-	input.data(1, 0) = 0;
-	input.data(32,1) = 0;
-	input.data(47,32) = 0;
-
+	input.data(SNIC_OP_OFFSET+32-1, SNIC_OP_OFFSET) = SNIC_TCP_HANDLER_OP_OPEN_CONN; //op
+	input.data(SNIC_OP_OFFSET+1*32+32-1, SNIC_OP_OFFSET+1*32) = 8888; //local_port
+	input.data(SNIC_OP_OFFSET+2*32+32-1, SNIC_OP_OFFSET+2*32) = 0x7f000001; //remote_ip
+	input.data(SNIC_OP_OFFSET+3*32+32-1, SNIC_OP_OFFSET+3*32) = 9999; //remote_port
 	dataFromEndpoint.write(input);
 
+#if 0
+	/*
+	 * WRITE request
+	 */
+	input.data(SNIC_OP_OFFSET+32-1, SNIC_OP_OFFSET) = SNIC_TCP_HANDLER_OP_WRITE; //op
+	input.data(SNIC_OP_OFFSET+1*32+32-1, SNIC_OP_OFFSET+1*32) = 8888; //local_port
+	input.data(SNIC_OP_OFFSET+2*32+32-1, SNIC_OP_OFFSET+2*32) = 0x100; //length
+	dataFromEndpoint.write(input);
+#endif
+
+#if 0
 	input.data(1, 0) = 2;
 	dataFromEndpoint.write(input);
 	dataFromEndpoint.write(input);
@@ -44,6 +59,7 @@ int main()
 	input.data(1,0) = 1;
 	input.last = 1;
 	dataFromEndpoint.write(input);
+#endif
 
 	int count = 0;
 	while (count < 1000) {
@@ -55,25 +71,42 @@ int main()
 		if (count == 500) {
 			appNotification n;
 
-			n.sessionID = 0;
+			n.sessionID = 8;
 			n.length = 64;
 			notifications.write(n);
 		}
 
 		if (!readRequest.empty()) {
 			readRequest.read();
-			printf("readRequest valid: module is asking for data\n");
+			printf("readRequest valid: module is asking for data. Sending data to it..\n");
+
+			/*
+			 * sessionId
+			 */
 			rxMetaData.write(0);
 
+			/*
+			 * prepare fake data.
+			 */
 			net_axis<DATA_WIDTH> d;
 			d.last = 1;
 			d.keep = 0xFFFFFFFFFFFFFFFF;
+			d.data = 0;
 			rxData.write(d);
 		}
 
+		/*
+		 * This is data from snic to endhost.
+		 */
 		if (!dataToEndpoint.empty()) {
-			dataToEndpoint.read();
-			printf("dataToEndpoint valid\n");
+			net_axis<DATA_WIDTH> currWord = dataToEndpoint.read();
+
+			printf("dataToEndpoint valid: op=%#x %x || ",
+				currWord.data(SNIC_OP_OFFSET+32-1, SNIC_OP_OFFSET),
+				currWord.data(31, 0)
+			);
+			print(std::cout, currWord);
+			std::cout << std::endl;
 		}
 
 		if (!listenPort.empty()) {
@@ -82,10 +115,17 @@ int main()
 			listenPortStatus.write(true);
 		}
 
+		/*
+		 * Handle open connection request
+		 */
 		if (!openConnection.empty()) {
 			openConnection.read();
 			std::cout << "Opening connection.. at cycle" << count << std::endl;
-			openConStatus.write(openStatus(123 + count, true));
+
+			ap_uint<16> sessionID;
+
+			sessionID = 0x66;
+			openConStatus.write(openStatus(sessionID, true));
 		}
 
 		if (!txMetaData.empty()) {

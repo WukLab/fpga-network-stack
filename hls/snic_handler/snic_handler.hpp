@@ -47,8 +47,12 @@ enum {
 	SNIC_TCP_HANDLER_OP_OPEN_CONN = 1,
 	SNIC_TCP_HANDLER_OP_LISTEN,
 	SNIC_TCP_HANDLER_OP_WRITE,
-	SNIC_TCP_HANDLER_OP_READ
+	SNIC_TCP_HANDLER_OP_READ,
+	SNIC_TCP_HANDLER_OP_CLOSE,
+	SNIC_TCP_HANDLER_OP_OPEN_CONN_REPLY
 };
+
+#define SNIC_OP_OFFSET	(sizeof(struct common_headers) * 8)
 
 struct snic_handler_open_conn_req {
 	struct common_headers common_headers;
@@ -58,6 +62,12 @@ struct snic_handler_open_conn_req {
 	uint32_t local_port;
 	uint32_t remote_ip;
 	uint32_t remote_port;
+} __packed;
+
+struct snic_handler_open_conn_reply {
+	struct common_headers common_headers;
+	uint32_t op;
+	uint16_t sessionID;
 } __packed;
 
 struct snic_handler_listen_req {
