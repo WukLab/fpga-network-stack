@@ -159,142 +159,7 @@ assign m_axis_mem_read_cmd[ddrPortNetworkTx].length = {9'h00, axis_read_cmd_data
 
 //TOE Module with RX_DDR_BYPASS disabled
 if (RX_DDR_BYPASS_EN == 0) begin
-/* toe_ip toe_inst ( */
-/* // Data output */
-/* .m_axis_tcp_data_TVALID(m_axis_tx_data.valid), */
-/* .m_axis_tcp_data_TREADY(m_axis_tx_data.ready), */
-/* .m_axis_tcp_data_TDATA(m_axis_tx_data.data), // output [63 : 0] AXI_M_Stream_TDATA */
-/* .m_axis_tcp_data_TKEEP(m_axis_tx_data.keep), */
-/* .m_axis_tcp_data_TLAST(m_axis_tx_data.last), */
-/* // Data input */
-/* .s_axis_tcp_data_TVALID(s_axis_rx_data.valid), */
-/* .s_axis_tcp_data_TREADY(s_axis_rx_data.ready), */
-/* .s_axis_tcp_data_TDATA(s_axis_rx_data.data), */
-/* .s_axis_tcp_data_TKEEP(s_axis_rx_data.keep), */
-/* .s_axis_tcp_data_TLAST(s_axis_rx_data.last), */
-/*  */
-/* // rx read commands */
-/* .m_axis_rxread_cmd_V_TVALID(m_axis_mem_read_cmd[ddrPortNetworkRx].valid), */
-/* .m_axis_rxread_cmd_V_TREADY(m_axis_mem_read_cmd[ddrPortNetworkRx].ready), */
-/* .m_axis_rxread_cmd_V_TDATA(axis_read_cmd_data[ddrPortNetworkRx]), */
-/* // rx write commands */
-/* .m_axis_rxwrite_cmd_V_TVALID(m_axis_mem_write_cmd[ddrPortNetworkRx].valid), */
-/* .m_axis_rxwrite_cmd_V_TREADY(m_axis_mem_write_cmd[ddrPortNetworkRx].ready), */
-/* .m_axis_rxwrite_cmd_V_TDATA(axis_write_cmd_data[ddrPortNetworkRx]), */
-/* // rx write status */
-/* .s_axis_rxwrite_sts_V_TVALID(s_axis_mem_write_sts[ddrPortNetworkRx].valid), */
-/* .s_axis_rxwrite_sts_V_TREADY(s_axis_mem_write_sts[ddrPortNetworkRx].ready), */
-/* .s_axis_rxwrite_sts_V_TDATA(s_axis_mem_write_sts[ddrPortNetworkRx].data), */
-/* // rx buffer read path */
-/* .s_axis_rxread_data_TVALID(axis_rxread_data.valid), */
-/* .s_axis_rxread_data_TREADY(axis_rxread_data.ready), */
-/* .s_axis_rxread_data_TDATA(axis_rxread_data.data), */
-/* .s_axis_rxread_data_TKEEP(axis_rxread_data.keep), */
-/* .s_axis_rxread_data_TLAST(axis_rxread_data.last), */
-/* // rx buffer write path */
-/* .m_axis_rxwrite_data_TVALID(axis_rxwrite_data.valid), */
-/* .m_axis_rxwrite_data_TREADY(axis_rxwrite_data.ready), */
-/* .m_axis_rxwrite_data_TDATA(axis_rxwrite_data.data), */
-/* .m_axis_rxwrite_data_TKEEP(axis_rxwrite_data.keep), */
-/* .m_axis_rxwrite_data_TLAST(axis_rxwrite_data.last), */
-/*  */
-/* // tx read commands */
-/* .m_axis_txread_cmd_V_TVALID(m_axis_mem_read_cmd[ddrPortNetworkTx].valid), */
-/* .m_axis_txread_cmd_V_TREADY(m_axis_mem_read_cmd[ddrPortNetworkTx].ready), */
-/* .m_axis_txread_cmd_V_TDATA(axis_read_cmd_data[ddrPortNetworkTx]), */
-/* //tx write commands */
-/* .m_axis_txwrite_cmd_V_TVALID(m_axis_mem_write_cmd[ddrPortNetworkTx].valid), */
-/* .m_axis_txwrite_cmd_V_TREADY(m_axis_mem_write_cmd[ddrPortNetworkTx].ready), */
-/* .m_axis_txwrite_cmd_V_TDATA(axis_write_cmd_data[ddrPortNetworkTx]), */
-/* // tx write status */
-/* .s_axis_txwrite_sts_V_TVALID(s_axis_mem_write_sts[ddrPortNetworkTx].valid), */
-/* .s_axis_txwrite_sts_V_TREADY(s_axis_mem_write_sts[ddrPortNetworkTx].ready), */
-/* .s_axis_txwrite_sts_V_TDATA(s_axis_mem_write_sts[ddrPortNetworkTx].data), */
-/* // tx read path */
-/* .s_axis_txread_data_TVALID(axis_txread_data.valid), */
-/* .s_axis_txread_data_TREADY(axis_txread_data.ready), */
-/* .s_axis_txread_data_TDATA(axis_txread_data.data), */
-/* .s_axis_txread_data_TKEEP(axis_txread_data.keep), */
-/* .s_axis_txread_data_TLAST(axis_txread_data.last), */
-/* // tx write path */
-/* .m_axis_txwrite_data_TVALID(axis_txwrite_data.valid), */
-/* .m_axis_txwrite_data_TREADY(axis_txwrite_data.ready), */
-/* .m_axis_txwrite_data_TDATA(axis_txwrite_data.data), */
-/* .m_axis_txwrite_data_TKEEP(axis_txwrite_data.keep), */
-/* .m_axis_txwrite_data_TLAST(axis_txwrite_data.last), */
-/* /// SmartCAM I/F /// */
-/* .m_axis_session_upd_req_V_TVALID(axis_ht_upd_req.valid), */
-/* .m_axis_session_upd_req_V_TREADY(axis_ht_upd_req.ready), */
-/* .m_axis_session_upd_req_V_TDATA(axis_ht_upd_req.data), */
-/*  */
-/* .s_axis_session_upd_rsp_V_TVALID(axis_ht_upd_rsp.valid), */
-/* .s_axis_session_upd_rsp_V_TREADY(axis_ht_upd_rsp.ready), */
-/* .s_axis_session_upd_rsp_V_TDATA(axis_ht_upd_rsp.data), */
-/*  */
-/* .m_axis_session_lup_req_V_TVALID(axis_ht_lup_req.valid), */
-/* .m_axis_session_lup_req_V_TREADY(axis_ht_lup_req.ready), */
-/* .m_axis_session_lup_req_V_TDATA(axis_ht_lup_req.data), */
-/* .s_axis_session_lup_rsp_V_TVALID(axis_ht_lup_rsp.valid), */
-/* .s_axis_session_lup_rsp_V_TREADY(axis_ht_lup_rsp.ready), */
-/* .s_axis_session_lup_rsp_V_TDATA(axis_ht_lup_rsp.data), */
-/*  */
-/* [> Application Interface <] */
-/* // listen&close port */
-/* .s_axis_listen_port_req_V_V_TVALID(axis_listen_port.valid), */
-/* .s_axis_listen_port_req_V_V_TREADY(axis_listen_port.ready), */
-/* .s_axis_listen_port_req_V_V_TDATA(axis_listen_port.data), */
-/* .m_axis_listen_port_rsp_V_TVALID(axis_listen_port_status.valid), */
-/* .m_axis_listen_port_rsp_V_TREADY(axis_listen_port_status.ready), */
-/* .m_axis_listen_port_rsp_V_TDATA(axis_listen_port_status.data), */
-/*  */
-/* // notification & read request */
-/* .m_axis_notification_V_TVALID(axis_notifications.valid), */
-/* .m_axis_notification_V_TREADY(axis_notifications.ready), */
-/* .m_axis_notification_V_TDATA(axis_notifications.data), */
-/* .s_axis_rx_data_req_V_TVALID(axis_read_package.valid), */
-/* .s_axis_rx_data_req_V_TREADY(axis_read_package.ready), */
-/* .s_axis_rx_data_req_V_TDATA(axis_read_package.data), */
-/*  */
-/* // open&close connection */
-/* .s_axis_open_conn_req_V_TVALID(axis_open_connection.valid), */
-/* .s_axis_open_conn_req_V_TREADY(axis_open_connection.ready), */
-/* .s_axis_open_conn_req_V_TDATA(axis_open_connection.data), */
-/* .m_axis_open_conn_rsp_V_TVALID(axis_open_status.valid), */
-/* .m_axis_open_conn_rsp_V_TREADY(axis_open_status.ready), */
-/* .m_axis_open_conn_rsp_V_TDATA(axis_open_status.data), */
-/* .s_axis_close_conn_req_V_V_TVALID(axis_close_connection.valid), */
-/* .s_axis_close_conn_req_V_V_TREADY(axis_close_connection.ready), */
-/* .s_axis_close_conn_req_V_V_TDATA(axis_close_connection.data), */
-/*  */
-/* // rx data */
-/* .m_axis_rx_data_rsp_metadata_V_V_TVALID(axis_rx_metadata.valid), */
-/* .m_axis_rx_data_rsp_metadata_V_V_TREADY(axis_rx_metadata.ready), */
-/* .m_axis_rx_data_rsp_metadata_V_V_TDATA(axis_rx_metadata.data), */
-/* .m_axis_rx_data_rsp_TVALID(m_axis_rx_data.valid), */
-/* .m_axis_rx_data_rsp_TREADY(m_axis_rx_data.ready), */
-/* .m_axis_rx_data_rsp_TDATA(m_axis_rx_data.data), */
-/* .m_axis_rx_data_rsp_TKEEP(m_axis_rx_data.keep), */
-/* .m_axis_rx_data_rsp_TLAST(m_axis_rx_data.last), */
-/*  */
-/* // tx data */
-/* .s_axis_tx_data_req_metadata_V_TVALID(axis_tx_metadata.valid), */
-/* .s_axis_tx_data_req_metadata_V_TREADY(axis_tx_metadata.ready), */
-/* .s_axis_tx_data_req_metadata_V_TDATA(axis_tx_metadata.data), */
-/* .s_axis_tx_data_req_TVALID(s_axis_tx_data.valid), */
-/* .s_axis_tx_data_req_TREADY(s_axis_tx_data.ready), */
-/* .s_axis_tx_data_req_TDATA(s_axis_tx_data.data), */
-/* .s_axis_tx_data_req_TKEEP(s_axis_tx_data.keep), */
-/* .s_axis_tx_data_req_TLAST(s_axis_tx_data.last), */
-/* .m_axis_tx_data_rsp_V_TVALID(m_axis_tx_status.valid), */
-/* .m_axis_tx_data_rsp_V_TREADY(m_axis_tx_status.ready), */
-/* .m_axis_tx_data_rsp_V_TDATA(m_axis_tx_status.data), */
-/*  */
-/* .myIpAddress_V(local_ip_address), */
-/* .regSessionCount_V(session_count_data), */
-/* .regSessionCount_V_ap_vld(session_count_valid), */
-/* .ap_clk(net_clk),                                                        // input aclk */
-/* .ap_rst_n(net_aresetn)                                                   // input aresetn */
-/* ); */
+$error("Error");
 end
 else begin //RX_DDR_BYPASS_EN == 1
 
@@ -433,60 +298,6 @@ end //RX_DDR_BYPASS_EN
 
 if (RX_DDR_BYPASS_EN == 1) begin
 //RX BUFFER FIFO
-if (WIDTH==64) begin
-axis_data_fifo_64_d1024 rx_buffer_fifo (
-  .s_axis_aresetn(net_aresetn),          // input wire s_axis_aresetn
-  .s_axis_aclk(net_clk),                // input wire s_axis_aclk
-  .s_axis_tvalid(axis_tcp2rxbuffer.valid),
-  .s_axis_tready(axis_tcp2rxbuffer.ready),
-  .s_axis_tdata(axis_tcp2rxbuffer.data),
-  .s_axis_tkeep(axis_tcp2rxbuffer.keep),
-  .s_axis_tlast(axis_tcp2rxbuffer.last),
-  .m_axis_tvalid(axis_rxbuffer2app.valid),
-  .m_axis_tready(axis_rxbuffer2app.ready),
-  .m_axis_tdata(axis_rxbuffer2app.data),
-  .m_axis_tkeep(axis_rxbuffer2app.keep),
-  .m_axis_tlast(axis_rxbuffer2app.last),
-  .axis_wr_data_count(rx_buffer_data_count),
-  .axis_rd_data_count()
-);
-end
-if (WIDTH==128) begin
-axis_data_fifo_128_d1024 rx_buffer_fifo (
-  .s_axis_aresetn(net_aresetn),          // input wire s_axis_aresetn
-  .s_axis_aclk(net_clk),                // input wire s_axis_aclk
-  .s_axis_tvalid(axis_tcp2rxbuffer.valid),
-  .s_axis_tready(axis_tcp2rxbuffer.ready),
-  .s_axis_tdata(axis_tcp2rxbuffer.data),
-  .s_axis_tkeep(axis_tcp2rxbuffer.keep),
-  .s_axis_tlast(axis_tcp2rxbuffer.last),
-  .m_axis_tvalid(axis_rxbuffer2app.valid),
-  .m_axis_tready(axis_rxbuffer2app.ready),
-  .m_axis_tdata(axis_rxbuffer2app.data),
-  .m_axis_tkeep(axis_rxbuffer2app.keep),
-  .m_axis_tlast(axis_rxbuffer2app.last),
-  .axis_wr_data_count(rx_buffer_data_count),
-  .axis_rd_data_count()
-);
-end
-if (WIDTH==256) begin
-axis_data_fifo_256_d1024 rx_buffer_fifo (
-  .s_axis_aresetn(net_aresetn),          // input wire s_axis_aresetn
-  .s_axis_aclk(net_clk),                // input wire s_axis_aclk
-  .s_axis_tvalid(axis_tcp2rxbuffer.valid),
-  .s_axis_tready(axis_tcp2rxbuffer.ready),
-  .s_axis_tdata(axis_tcp2rxbuffer.data),
-  .s_axis_tkeep(axis_tcp2rxbuffer.keep),
-  .s_axis_tlast(axis_tcp2rxbuffer.last),
-  .m_axis_tvalid(axis_rxbuffer2app.valid),
-  .m_axis_tready(axis_rxbuffer2app.ready),
-  .m_axis_tdata(axis_rxbuffer2app.data),
-  .m_axis_tkeep(axis_rxbuffer2app.keep),
-  .m_axis_tlast(axis_rxbuffer2app.last),
-  .axis_wr_data_count(rx_buffer_data_count),
-  .axis_rd_data_count()
-);
-end
 if (WIDTH==512) begin
 axis_data_fifo_512_d1024 rx_buffer_fifo (
   .s_axis_aresetn(net_aresetn),          // input wire s_axis_aresetn
@@ -562,237 +373,36 @@ hash_table_ip hash_table_inst (
   .regInsertFailureCount_V(ht_insert_failure_count)
 );
 
-if (WIDTH==64) begin
-//TCP Data Path
-if (RX_DDR_BYPASS_EN == 0) begin
-axis_512_to_64_converter tcp_rxread_data_converter (
-  .aclk(net_clk),                    // input wire aclk
-  .aresetn(net_aresetn),              // input wire aresetn
-  .s_axis_tvalid(s_axis_mem_read_data[ddrPortNetworkRx].valid),  // input wire s_axis_tvalid
-  .s_axis_tready(s_axis_mem_read_data[ddrPortNetworkRx].ready),  // output wire s_axis_tready
-  .s_axis_tdata(s_axis_mem_read_data[ddrPortNetworkRx].data),    // input wire [63 : 0] s_axis_tdata
-  .s_axis_tkeep(s_axis_mem_read_data[ddrPortNetworkRx].keep),    // input wire [7 : 0] s_axis_tkeep
-  .s_axis_tlast(s_axis_mem_read_data[ddrPortNetworkRx].last),    // input wire s_axis_tlast
-  .m_axis_tvalid(axis_rxread_data.valid),  // output wire m_axis_tvalid
-  .m_axis_tready(axis_rxread_data.ready),  // input wire m_axis_tready
-  .m_axis_tdata(axis_rxread_data.data),    // output wire [511 : 0] m_axis_tdata
-  .m_axis_tkeep(axis_rxread_data.keep),    // output wire [63 : 0] m_axis_tkeep
-  .m_axis_tlast(axis_rxread_data.last)    // output wire m_axis_tlast
-);
-
-axis_64_to_512_converter tcp_rxwrite_data_converter (
-  .aclk(net_clk),                    // input wire aclk
-  .aresetn(net_aresetn),              // input wire aresetn
-  .s_axis_tvalid(axis_rxwrite_data.valid),  // input wire s_axis_tvalid
-  .s_axis_tready(axis_rxwrite_data.ready),  // output wire s_axis_tready
-  .s_axis_tdata(axis_rxwrite_data.data),    // input wire [63 : 0] s_axis_tdata
-  .s_axis_tkeep(axis_rxwrite_data.keep),    // input wire [7 : 0] s_axis_tkeep
-  .s_axis_tlast(axis_rxwrite_data.last),    // input wire s_axis_tlast
-  .s_axis_tdest(1'b0),    // input wire s_axis_tlast
-  .m_axis_tvalid(m_axis_mem_write_data[ddrPortNetworkRx].valid),  // output wire m_axis_tvalid
-  .m_axis_tready(m_axis_mem_write_data[ddrPortNetworkRx].ready),  // input wire m_axis_tready
-  .m_axis_tdata(m_axis_mem_write_data[ddrPortNetworkRx].data),    // output wire [511 : 0] m_axis_tdata
-  .m_axis_tkeep(m_axis_mem_write_data[ddrPortNetworkRx].keep),    // output wire [63 : 0] m_axis_tkeep
-  .m_axis_tlast(m_axis_mem_write_data[ddrPortNetworkRx].last),    // output wire m_axis_tlast
-  .m_axis_tdest()    // output wire m_axis_tlast
-);
-end
-axis_512_to_64_converter tcp_txread_data_converter (
-  .aclk(net_clk),                    // input wire aclk
-  .aresetn(net_aresetn),              // input wire aresetn
-  .s_axis_tvalid(s_axis_mem_read_data[ddrPortNetworkTx].valid),  // input wire s_axis_tvalid
-  .s_axis_tready(s_axis_mem_read_data[ddrPortNetworkTx].ready),  // output wire s_axis_tready
-  .s_axis_tdata(s_axis_mem_read_data[ddrPortNetworkTx].data),    // input wire [63 : 0] s_axis_tdata
-  .s_axis_tkeep(s_axis_mem_read_data[ddrPortNetworkTx].keep),    // input wire [7 : 0] s_axis_tkeep
-  .s_axis_tlast(s_axis_mem_read_data[ddrPortNetworkTx].last),    // input wire s_axis_tlast
-  .m_axis_tvalid(axis_txread_data.valid),  // output wire m_axis_tvalid
-  .m_axis_tready(axis_txread_data.ready),  // input wire m_axis_tready
-  .m_axis_tdata(axis_txread_data.data),    // output wire [511 : 0] m_axis_tdata
-  .m_axis_tkeep(axis_txread_data.keep),    // output wire [63 : 0] m_axis_tkeep
-  .m_axis_tlast(axis_txread_data.last)    // output wire m_axis_tlast
-);
-
-axis_64_to_512_converter tcp_txwrite_data_converter (
-  .aclk(net_clk),                    // input wire aclk
-  .aresetn(net_aresetn),              // input wire aresetn
-  .s_axis_tvalid(axis_txwrite_data.valid),  // input wire s_axis_tvalid
-  .s_axis_tready(axis_txwrite_data.ready),  // output wire s_axis_tready
-  .s_axis_tdata(axis_txwrite_data.data),    // input wire [63 : 0] s_axis_tdata
-  .s_axis_tkeep(axis_txwrite_data.keep),    // input wire [7 : 0] s_axis_tkeep
-  .s_axis_tlast(axis_txwrite_data.last),    // input wire s_axis_tlast
-  .s_axis_tdest(1'b0),    // input wire s_axis_tlast
-  .m_axis_tvalid(m_axis_mem_write_data[ddrPortNetworkTx].valid),  // output wire m_axis_tvalid
-  .m_axis_tready(m_axis_mem_write_data[ddrPortNetworkTx].ready),  // input wire m_axis_tready
-  .m_axis_tdata(m_axis_mem_write_data[ddrPortNetworkTx].data),    // output wire [511 : 0] m_axis_tdata
-  .m_axis_tkeep(m_axis_mem_write_data[ddrPortNetworkTx].keep),    // output wire [63 : 0] m_axis_tkeep
-  .m_axis_tlast(m_axis_mem_write_data[ddrPortNetworkTx].last),    // output wire m_axis_tlast
-  .m_axis_tdest()    // output wire m_axis_tlast
-);
-end
-if (WIDTH==128) begin
-//TCP Data Path
-if (RX_DDR_BYPASS_EN == 0) begin
-axis_512_to_128_converter tcp_rxread_data_converter (
-  .aclk(net_clk),                    // input wire aclk
-  .aresetn(net_aresetn),              // input wire aresetn
-  .s_axis_tvalid(s_axis_mem_read_data[ddrPortNetworkRx].valid),  // input wire s_axis_tvalid
-  .s_axis_tready(s_axis_mem_read_data[ddrPortNetworkRx].ready),  // output wire s_axis_tready
-  .s_axis_tdata(s_axis_mem_read_data[ddrPortNetworkRx].data),    // input wire [63 : 0] s_axis_tdata
-  .s_axis_tkeep(s_axis_mem_read_data[ddrPortNetworkRx].keep),    // input wire [7 : 0] s_axis_tkeep
-  .s_axis_tlast(s_axis_mem_read_data[ddrPortNetworkRx].last),    // input wire s_axis_tlast
-  .m_axis_tvalid(axis_rxread_data.valid),  // output wire m_axis_tvalid
-  .m_axis_tready(axis_rxread_data.ready),  // input wire m_axis_tready
-  .m_axis_tdata(axis_rxread_data.data),    // output wire [511 : 0] m_axis_tdata
-  .m_axis_tkeep(axis_rxread_data.keep),    // output wire [63 : 0] m_axis_tkeep
-  .m_axis_tlast(axis_rxread_data.last)    // output wire m_axis_tlast
-);
-
-axis_128_to_512_converter tcp_rxwrite_data_converter (
-  .aclk(net_clk),                    // input wire aclk
-  .aresetn(net_aresetn),              // input wire aresetn
-  .s_axis_tvalid(axis_rxwrite_data.valid),  // input wire s_axis_tvalid
-  .s_axis_tready(axis_rxwrite_data.ready),  // output wire s_axis_tready
-  .s_axis_tdata(axis_rxwrite_data.data),    // input wire [63 : 0] s_axis_tdata
-  .s_axis_tkeep(axis_rxwrite_data.keep),    // input wire [7 : 0] s_axis_tkeep
-  .s_axis_tlast(axis_rxwrite_data.last),    // input wire s_axis_tlast
-  .s_axis_tdest(1'b0),    // input wire s_axis_tlast
-  .m_axis_tvalid(m_axis_mem_write_data[ddrPortNetworkRx].valid),  // output wire m_axis_tvalid
-  .m_axis_tready(m_axis_mem_write_data[ddrPortNetworkRx].ready),  // input wire m_axis_tready
-  .m_axis_tdata(m_axis_mem_write_data[ddrPortNetworkRx].data),    // output wire [511 : 0] m_axis_tdata
-  .m_axis_tkeep(m_axis_mem_write_data[ddrPortNetworkRx].keep),    // output wire [63 : 0] m_axis_tkeep
-  .m_axis_tlast(m_axis_mem_write_data[ddrPortNetworkRx].last),    // output wire m_axis_tlast
-  .m_axis_tdest()    // output wire m_axis_tlast
-);
-end
-axis_512_to_128_converter tcp_txread_data_converter (
-  .aclk(net_clk),                    // input wire aclk
-  .aresetn(net_aresetn),              // input wire aresetn
-  .s_axis_tvalid(s_axis_mem_read_data[ddrPortNetworkTx].valid),  // input wire s_axis_tvalid
-  .s_axis_tready(s_axis_mem_read_data[ddrPortNetworkTx].ready),  // output wire s_axis_tready
-  .s_axis_tdata(s_axis_mem_read_data[ddrPortNetworkTx].data),    // input wire [63 : 0] s_axis_tdata
-  .s_axis_tkeep(s_axis_mem_read_data[ddrPortNetworkTx].keep),    // input wire [7 : 0] s_axis_tkeep
-  .s_axis_tlast(s_axis_mem_read_data[ddrPortNetworkTx].last),    // input wire s_axis_tlast
-  .m_axis_tvalid(axis_txread_data.valid),  // output wire m_axis_tvalid
-  .m_axis_tready(axis_txread_data.ready),  // input wire m_axis_tready
-  .m_axis_tdata(axis_txread_data.data),    // output wire [511 : 0] m_axis_tdata
-  .m_axis_tkeep(axis_txread_data.keep),    // output wire [63 : 0] m_axis_tkeep
-  .m_axis_tlast(axis_txread_data.last)    // output wire m_axis_tlast
-);
-
-axis_128_to_512_converter tcp_txwrite_data_converter (
-  .aclk(net_clk),                    // input wire aclk
-  .aresetn(net_aresetn),              // input wire aresetn
-  .s_axis_tvalid(axis_txwrite_data.valid),  // input wire s_axis_tvalid
-  .s_axis_tready(axis_txwrite_data.ready),  // output wire s_axis_tready
-  .s_axis_tdata(axis_txwrite_data.data),    // input wire [63 : 0] s_axis_tdata
-  .s_axis_tkeep(axis_txwrite_data.keep),    // input wire [7 : 0] s_axis_tkeep
-  .s_axis_tlast(axis_txwrite_data.last),    // input wire s_axis_tlast
-  .s_axis_tdest(1'b0),    // input wire s_axis_tlast
-  .m_axis_tvalid(m_axis_mem_write_data[ddrPortNetworkTx].valid),  // output wire m_axis_tvalid
-  .m_axis_tready(m_axis_mem_write_data[ddrPortNetworkTx].ready),  // input wire m_axis_tready
-  .m_axis_tdata(m_axis_mem_write_data[ddrPortNetworkTx].data),    // output wire [511 : 0] m_axis_tdata
-  .m_axis_tkeep(m_axis_mem_write_data[ddrPortNetworkTx].keep),    // output wire [63 : 0] m_axis_tkeep
-  .m_axis_tlast(m_axis_mem_write_data[ddrPortNetworkTx].last),    // output wire m_axis_tlast
-  .m_axis_tdest()    // output wire m_axis_tlast
-);
-end
-if (WIDTH==256) begin
-//TCP Data Path
-if (RX_DDR_BYPASS_EN == 0) begin
-axis_512_to_256_converter tcp_rxread_data_converter (
-  .aclk(net_clk),                    // input wire aclk
-  .aresetn(net_aresetn),              // input wire aresetn
-  .s_axis_tvalid(s_axis_mem_read_data[ddrPortNetworkRx].valid),  // input wire s_axis_tvalid
-  .s_axis_tready(s_axis_mem_read_data[ddrPortNetworkRx].ready),  // output wire s_axis_tready
-  .s_axis_tdata(s_axis_mem_read_data[ddrPortNetworkRx].data),    // input wire [63 : 0] s_axis_tdata
-  .s_axis_tkeep(s_axis_mem_read_data[ddrPortNetworkRx].keep),    // input wire [7 : 0] s_axis_tkeep
-  .s_axis_tlast(s_axis_mem_read_data[ddrPortNetworkRx].last),    // input wire s_axis_tlast
-  .m_axis_tvalid(axis_rxread_data.valid),  // output wire m_axis_tvalid
-  .m_axis_tready(axis_rxread_data.ready),  // input wire m_axis_tready
-  .m_axis_tdata(axis_rxread_data.data),    // output wire [511 : 0] m_axis_tdata
-  .m_axis_tkeep(axis_rxread_data.keep),    // output wire [63 : 0] m_axis_tkeep
-  .m_axis_tlast(axis_rxread_data.last)    // output wire m_axis_tlast
-);
-
-axis_256_to_512_converter tcp_rxwrite_data_converter (
-  .aclk(net_clk),                    // input wire aclk
-  .aresetn(net_aresetn),              // input wire aresetn
-  .s_axis_tvalid(axis_rxwrite_data.valid),  // input wire s_axis_tvalid
-  .s_axis_tready(axis_rxwrite_data.ready),  // output wire s_axis_tready
-  .s_axis_tdata(axis_rxwrite_data.data),    // input wire [63 : 0] s_axis_tdata
-  .s_axis_tkeep(axis_rxwrite_data.keep),    // input wire [7 : 0] s_axis_tkeep
-  .s_axis_tlast(axis_rxwrite_data.last),    // input wire s_axis_tlast
-  .s_axis_tdest(1'b0),    // input wire s_axis_tlast
-  .m_axis_tvalid(m_axis_mem_write_data[ddrPortNetworkRx].valid),  // output wire m_axis_tvalid
-  .m_axis_tready(m_axis_mem_write_data[ddrPortNetworkRx].ready),  // input wire m_axis_tready
-  .m_axis_tdata(m_axis_mem_write_data[ddrPortNetworkRx].data),    // output wire [511 : 0] m_axis_tdata
-  .m_axis_tkeep(m_axis_mem_write_data[ddrPortNetworkRx].keep),    // output wire [63 : 0] m_axis_tkeep
-  .m_axis_tlast(m_axis_mem_write_data[ddrPortNetworkRx].last),    // output wire m_axis_tlast
-  .m_axis_tdest()    // output wire m_axis_tlast
-);
-end
-axis_512_to_256_converter tcp_txread_data_converter (
-  .aclk(net_clk),                    // input wire aclk
-  .aresetn(net_aresetn),              // input wire aresetn
-  .s_axis_tvalid(s_axis_mem_read_data[ddrPortNetworkTx].valid),  // input wire s_axis_tvalid
-  .s_axis_tready(s_axis_mem_read_data[ddrPortNetworkTx].ready),  // output wire s_axis_tready
-  .s_axis_tdata(s_axis_mem_read_data[ddrPortNetworkTx].data),    // input wire [63 : 0] s_axis_tdata
-  .s_axis_tkeep(s_axis_mem_read_data[ddrPortNetworkTx].keep),    // input wire [7 : 0] s_axis_tkeep
-  .s_axis_tlast(s_axis_mem_read_data[ddrPortNetworkTx].last),    // input wire s_axis_tlast
-  .m_axis_tvalid(axis_txread_data.valid),  // output wire m_axis_tvalid
-  .m_axis_tready(axis_txread_data.ready),  // input wire m_axis_tready
-  .m_axis_tdata(axis_txread_data.data),    // output wire [511 : 0] m_axis_tdata
-  .m_axis_tkeep(axis_txread_data.keep),    // output wire [63 : 0] m_axis_tkeep
-  .m_axis_tlast(axis_txread_data.last)    // output wire m_axis_tlast
-);
-
-axis_256_to_512_converter tcp_txwrite_data_converter (
-  .aclk(net_clk),                    // input wire aclk
-  .aresetn(net_aresetn),              // input wire aresetn
-  .s_axis_tvalid(axis_txwrite_data.valid),  // input wire s_axis_tvalid
-  .s_axis_tready(axis_txwrite_data.ready),  // output wire s_axis_tready
-  .s_axis_tdata(axis_txwrite_data.data),    // input wire [63 : 0] s_axis_tdata
-  .s_axis_tkeep(axis_txwrite_data.keep),    // input wire [7 : 0] s_axis_tkeep
-  .s_axis_tlast(axis_txwrite_data.last),    // input wire s_axis_tlast
-  .s_axis_tdest(1'b0),    // input wire s_axis_tlast
-  .m_axis_tvalid(m_axis_mem_write_data[ddrPortNetworkTx].valid),  // output wire m_axis_tvalid
-  .m_axis_tready(m_axis_mem_write_data[ddrPortNetworkTx].ready),  // input wire m_axis_tready
-  .m_axis_tdata(m_axis_mem_write_data[ddrPortNetworkTx].data),    // output wire [511 : 0] m_axis_tdata
-  .m_axis_tkeep(m_axis_mem_write_data[ddrPortNetworkTx].keep),    // output wire [63 : 0] m_axis_tkeep
-  .m_axis_tlast(m_axis_mem_write_data[ddrPortNetworkTx].last),    // output wire m_axis_tlast
-  .m_axis_tdest()    // output wire m_axis_tlast
-);
-end
 if (WIDTH==512) begin
-/*
- * TODO YS
- * Not sure if this is correct.
- */
-//TCP Data Path
-if (RX_DDR_BYPASS_EN == 0) begin
-    assign axis_rxread_data.valid = s_axis_mem_read_data[ddrPortNetworkRx].valid;
-    assign s_axis_mem_read_data[ddrPortNetworkRx].ready = axis_rxread_data.ready;
-    assign axis_rxread_data.data = s_axis_mem_read_data[ddrPortNetworkRx].data;
-    assign axis_rxread_data.keep = s_axis_mem_read_data[ddrPortNetworkRx].keep;
-    assign axis_rxread_data.last = s_axis_mem_read_data[ddrPortNetworkRx].last;
-    
-    assign m_axis_mem_write_data[ddrPortNetworkRx].valid = axis_rxwrite_data.valid;
-    assign axis_rxwrite_data.ready = m_axis_mem_write_data[ddrPortNetworkRx].ready;
-    assign m_axis_mem_write_data[ddrPortNetworkRx].data = axis_rxwrite_data.data;
-    assign m_axis_mem_write_data[ddrPortNetworkRx].keep = axis_rxwrite_data.keep;
-    assign m_axis_mem_write_data[ddrPortNetworkRx].last = axis_rxwrite_data.last;
-end
+    /*
+     * TODO YS
+     * Not sure if this is correct.
+     */
+    //TCP Data Path
+    if (RX_DDR_BYPASS_EN == 0) begin
+        assign axis_rxread_data.valid = s_axis_mem_read_data[ddrPortNetworkRx].valid;
+        assign s_axis_mem_read_data[ddrPortNetworkRx].ready = axis_rxread_data.ready;
+        assign axis_rxread_data.data = s_axis_mem_read_data[ddrPortNetworkRx].data;
+        assign axis_rxread_data.keep = s_axis_mem_read_data[ddrPortNetworkRx].keep;
+        assign axis_rxread_data.last = s_axis_mem_read_data[ddrPortNetworkRx].last;
+        
+        assign m_axis_mem_write_data[ddrPortNetworkRx].valid = axis_rxwrite_data.valid;
+        assign axis_rxwrite_data.ready = m_axis_mem_write_data[ddrPortNetworkRx].ready;
+        assign m_axis_mem_write_data[ddrPortNetworkRx].data = axis_rxwrite_data.data;
+        assign m_axis_mem_write_data[ddrPortNetworkRx].keep = axis_rxwrite_data.keep;
+        assign m_axis_mem_write_data[ddrPortNetworkRx].last = axis_rxwrite_data.last;
+    end
 
-assign axis_txread_data.valid = s_axis_mem_read_data[ddrPortNetworkTx].valid;
-assign s_axis_mem_read_data[ddrPortNetworkTx].ready = axis_txread_data.ready;
-assign axis_txread_data.data = s_axis_mem_read_data[ddrPortNetworkTx].data;
-assign axis_txread_data.keep = s_axis_mem_read_data[ddrPortNetworkTx].keep;
-assign axis_txread_data.last = s_axis_mem_read_data[ddrPortNetworkTx].last;
-assign m_axis_mem_write_data[ddrPortNetworkTx].valid = axis_txwrite_data.valid;
-assign axis_txwrite_data.ready = m_axis_mem_write_data[ddrPortNetworkTx].ready;
-assign m_axis_mem_write_data[ddrPortNetworkTx].data = axis_txwrite_data.data;
-assign m_axis_mem_write_data[ddrPortNetworkTx].keep = axis_txwrite_data.keep;
-assign m_axis_mem_write_data[ddrPortNetworkTx].last = axis_txwrite_data.last;
+    assign axis_txread_data.valid = s_axis_mem_read_data[ddrPortNetworkTx].valid;
+    assign s_axis_mem_read_data[ddrPortNetworkTx].ready = axis_txread_data.ready;
+    assign axis_txread_data.data = s_axis_mem_read_data[ddrPortNetworkTx].data;
+    assign axis_txread_data.keep = s_axis_mem_read_data[ddrPortNetworkTx].keep;
+    assign axis_txread_data.last = s_axis_mem_read_data[ddrPortNetworkTx].last;
+    assign m_axis_mem_write_data[ddrPortNetworkTx].valid = axis_txwrite_data.valid;
+    assign axis_txwrite_data.ready = m_axis_mem_write_data[ddrPortNetworkTx].ready;
+    assign m_axis_mem_write_data[ddrPortNetworkTx].data = axis_txwrite_data.data;
+    assign m_axis_mem_write_data[ddrPortNetworkTx].keep = axis_txwrite_data.keep;
+    assign m_axis_mem_write_data[ddrPortNetworkTx].last = axis_txwrite_data.last;
 end
 
 

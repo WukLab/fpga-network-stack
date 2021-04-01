@@ -7,17 +7,10 @@
 `include "davos_types.svh"
 
 module network_stack #(
-    parameter NET_BANDWIDTH = 10,
-    parameter WIDTH = 64,
-    parameter MAC_ADDRESS = 48'hE59D02350A00, // LSB first, 00:0A:35:02:9D:E5
-    parameter IPV6_ADDRESS= 128'hE59D_02FF_FF35_0A02_0000_0000_0000_80FE, //LSB first: FE80_0000_0000_0000_020A_35FF_FF02_9DE5,
-    parameter IP_SUBNET_MASK = 32'h00FFFFFF,
-    parameter IP_DEFAULT_GATEWAY = 32'h00000000,
-    parameter DHCP_EN   = 0,
-    parameter TCP_EN = 0,
+    parameter NET_BANDWIDTH = 100,
+    parameter WIDTH = 512,
+    parameter TCP_EN = 1,
     parameter RX_DDR_BYPASS_EN = 0,
-    parameter UDP_EN = 0,
-    parameter ROCE_EN = 0,
     parameter NUM_TCP_CHANNELS = 1
 )(
     input wire          net_clk,
@@ -54,26 +47,6 @@ module network_stack #(
     axis_meta.master    m_axis_tx_status
 );
 
-reg[31:0] toe_ip_address;
-
-/*
- * TODO
- * check whether TOE really needs it
- * If so, use a configurable register or sth.
- */
-always @(posedge net_clk)
-begin
-    if (net_aresetn == 0) begin
-        toe_ip_address <= 32'h00000000;
-    end
-    else begin
-        toe_ip_address <= 32'hD1D4010B;
-    end
-end
-
-/*
- * TCP/IP
- */ 
 logic       session_count_valid;
 logic[15:0] session_count_data;
  
@@ -82,8 +55,8 @@ tcp_stack #(
      .WIDTH(WIDTH),
      .RX_DDR_BYPASS_EN(RX_DDR_BYPASS_EN)
  ) tcp_stack_inst(
-     .net_clk(net_clk), // input aclk
-     .net_aresetn(net_aresetn), // input aresetn
+     .net_clk(net_clk),
+     .net_aresetn(net_aresetn),
      
      // streams to network
      .s_axis_rx_data(s_axis_net),
@@ -92,10 +65,8 @@ tcp_stack #(
      // memory cmd streams
      .m_axis_mem_read_cmd(m_axis_read_cmd),
      .m_axis_mem_write_cmd(m_axis_write_cmd),
-     // memory sts streams
      .s_axis_mem_read_sts(s_axis_read_sts),
      .s_axis_mem_write_sts(s_axis_write_sts),
-     // memory data streams
      .s_axis_mem_read_data(s_axis_read_data),
      .m_axis_mem_write_data(m_axis_write_data),
      
@@ -117,7 +88,10 @@ tcp_stack #(
      .s_axis_tx_data(s_axis_tx_data),
      .m_axis_tx_status(m_axis_tx_status),
      
-     .local_ip_address(toe_ip_address),
+     // NOTE Yizhou
+     // We will use a separate module to manipulate
+     // ip and mac anyway. so no need to use a valid IP.
+     .local_ip_address(32'h00000000),
      .session_count_valid(session_count_valid),
      .session_count_data(session_count_data)
 );
