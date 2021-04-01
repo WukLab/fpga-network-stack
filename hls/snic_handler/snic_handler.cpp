@@ -2,6 +2,17 @@
 #include "snic_handler_config.hpp"
 #include <iostream>
 
+struct map_entry {
+	//ap_uint<16> sessionID;
+	ap_uint<32> local_ip;
+	ap_uint<16> local_port;
+	//ap_uint<32> remote_ip;
+	//ap_uint<32> remote_port;
+};
+
+#define NR_MAX_ENTRIES (1024)
+struct map_entry map_table[NR_MAX_ENTRIES];
+
 struct internalOpenConnMeta {
 	ap_uint<32> remote_ip;
 	ap_uint<16> remote_port;
@@ -30,7 +41,8 @@ void client(hls::stream<ipTuple> &openConnection,
 	    hls::stream<net_axis<WIDTH> > &txData,
 	    hls::stream<appTxRsp> &txStatus,
 	    hls::stream<struct internalOpenConnMeta> &internalOpenConnMeta,
-	    hls::stream<net_axis<WIDTH> > &dataFromEndpoint2TCP)
+	    hls::stream<net_axis<WIDTH> > &dataFromEndpoint2TCP,
+	    hls::stream<net_axis<WIDTH> > &dataToEndpoint)
 {
 #pragma HLS PIPELINE II = 1
 #pragma HLS INLINE off
@@ -39,16 +51,19 @@ void client(hls::stream<ipTuple> &openConnection,
 
 	static openConnState openFsmState = IDLE;
 
+	static struct internalOpenConnMeta open;
+
 	switch (openFsmState) {
 	case IDLE:
 		if (!internalOpenConnMeta.empty()) {
-			struct internalOpenConnMeta open;
 			open = internalOpenConnMeta.read();
 
 			ipTuple openTuple;
 			openTuple.ip_address = open.remote_ip;
 			openTuple.ip_port = open.remote_port;
+
 			openConnection.write(openTuple);
+
 			openFsmState = WAIT_CON;
 		}
 		break;
@@ -57,14 +72,22 @@ void client(hls::stream<ipTuple> &openConnection,
 			openStatus status = openConStatus.read();
 			ap_uint<16> sessionID = status.sessionID;
 
-			//printf("Open status: %d sessionID: %d\n", status.success, sessionID);
+			printf("Open status: %d sessionID: %#x\n", status.success, sessionID.to_uint());
 
 			/*
-		         * TODO
-		         * we should send REPLY back to host
-		         */
+			 * Let's send the session id back to the original host.
+			 * struct snic_handler_open_conn_reply
+			 */
 			if (status.success) {
-				;
+				net_axis<WIDTH> w;
+
+				w.data(511, 0) = 0;
+				w.data(14*8-1, 12*8) = 0xa000; // mac eth_type
+				w.data(SNIC_OP_OFFSET+32-1, SNIC_OP_OFFSET) = SNIC_TCP_HANDLER_OP_OPEN_CONN_REPLY; //op
+				w.data(SNIC_OP_OFFSET+32+16-1, SNIC_OP_OFFSET+32) = sessionID; //sessionID
+				w.keep = 0xFFFFFFFFFFFFFFFF;
+				w.last = 1;
+				dataToEndpoint.write(w);
 			}
 			openFsmState = IDLE;
 		}
@@ -124,12 +147,15 @@ void client(hls::stream<ipTuple> &openConnection,
 	}
 }
 
+/*
+ * Receive data from TCP module, then send to endhost.
+ */
 template <int WIDTH>
 void server(hls::stream<ap_uint<16> > &listenPort, hls::stream<bool> &listenPortStatus,
 	    hls::stream<appNotification> &notifications, hls::stream<appReadRequest> &readRequest,
 	    hls::stream<ap_uint<16> > &rxMetaData, hls::stream<net_axis<WIDTH> > &rxData,
 	    hls::stream<struct internalListenConnMeta> &internalListenConnMeta,
-		hls::stream<net_axis<WIDTH> > &dataToEndpoint)
+	    hls::stream<net_axis<WIDTH> > &dataToEndpoint)
 {
 #pragma HLS PIPELINE II = 1
 #pragma HLS INLINE off
@@ -163,9 +189,16 @@ void server(hls::stream<ap_uint<16> > &listenPort, hls::stream<bool> &listenPort
 	enum consumeFsmStateType { WAIT_PKG, CONSUME };
 	static consumeFsmStateType serverFsmState = WAIT_PKG;
 
+	/*
+	 * TCP notify us that there is incoming data
+	 * We immediately send a ReadRequest to read the data from TCP module
+	 *
+	 * TODO: we should rmap the sessionID back to the host port ID.
+	 */
 	if (!notifications.empty()) {
 		appNotification notification = notifications.read();
 
+		//printf("%s:%d received new data notification.\n", __func__, __LINE__);
 		if (notification.length != 0) {
 			readRequest.write(appReadRequest(notification.sessionID, notification.length));
 		}
@@ -182,25 +215,49 @@ void server(hls::stream<ap_uint<16> > &listenPort, hls::stream<bool> &listenPort
 	case WAIT_PKG:
 		if (!rxMetaData.empty() && !rxData.empty()) {
 			rxMetaData.read();
-			net_axis<WIDTH> data = rxData.read();
-			if (!data.last) {
-				serverFsmState = CONSUME;
-			}
-			dataToEndpoint.write(data);
+
+			/*
+			 * On the first cycle, we send the READ header
+			 */
+			net_axis<WIDTH> w;
+
+			w.data(511, 0) = 0;
+			w.data(7,0)=0x66;
+			w.data(14*8-1, 12*8) = 0xa000;
+			w.data(SNIC_OP_OFFSET+32-1, SNIC_OP_OFFSET) = SNIC_TCP_HANDLER_OP_READ;
+			w.keep = 0xFFFFFFFFFFFFFFFF;
+			w.last = 0;
+			dataToEndpoint.write(w);
+			serverFsmState = CONSUME;
 		}
 		break;
 	case CONSUME:
 		if (!rxData.empty()) {
 			net_axis<WIDTH> data = rxData.read();
+			dataToEndpoint.write(data);
 			if (data.last) {
 				serverFsmState = WAIT_PKG;
 			}
-			dataToEndpoint.write(data);
 		}
 		break;
 	}
 }
 
+/*
+ * in1 is the reply for open connection
+ * in2 is the data from TCP to endpoint
+ */
+template <int WIDTH>
+void mergeOutput(hls::stream<net_axis<WIDTH> > &in1,
+		 hls::stream<net_axis<WIDTH> > &in2,
+		 hls::stream<net_axis<WIDTH> > &out)
+{
+	if (!in1.empty()) {
+		out.write(in1.read());
+	} else if (!in2.empty()) {
+		out.write(in2.read());
+	}
+}
 
 /*
  * This function parse functions sent over from endpoints.
@@ -221,21 +278,35 @@ void parse_packets(hls::stream<net_axis<WIDTH> > &dataFromEndpoint,
 	if (!dataFromEndpoint.empty()) {
 		net_axis<WIDTH> w = dataFromEndpoint.read();
 
-		// TODO change after we decide hdr format.
-		int mode = w.data(1, 0);
-		int remote_ip = w.data(32, 1);
-		int port = w.data(47, 32);
+		int op = w.data(SNIC_OP_OFFSET+32-1, SNIC_OP_OFFSET);
+		unsigned int local_port;
 
-		if (mode == 0) {
-			open.remote_ip = remote_ip;
-			open.remote_port = port;
+		/*
+		 * TODO
+		 * We need a table to map from session_id to remote_ip:remote_port
+		 * from host port -> session_id -> remote_ip:remote_port
+		 */
+		if (op == SNIC_TCP_HANDLER_OP_OPEN_CONN) {
+			local_port  = w.data(SNIC_OP_OFFSET+1*32+32-1, SNIC_OP_OFFSET+1*32);
+			open.remote_ip   = w.data(SNIC_OP_OFFSET+2*32+32-1, SNIC_OP_OFFSET+2*32);
+			open.remote_port = w.data(SNIC_OP_OFFSET+3*32+32-1, SNIC_OP_OFFSET+3*32);
+
 			internalOpenConnMeta.write(open);
-		} else if (mode == 1) {
-			listen.local_port = port;
+		} else if (op == SNIC_TCP_HANDLER_OP_LISTEN) {
+			//listen.local_port = port;
 			internalListenConnMeta.write(listen);
-		} else if (mode == 2) {
+		} else if (op == SNIC_TCP_HANDLER_OP_WRITE) {
+			unsigned int length;
+
+			/*
+			 * TODO
+			 * Deal with this.
+			 * The host would use sessionid.
+			 */
+			local_port = w.data(SNIC_OP_OFFSET+1*32+32-1, SNIC_OP_OFFSET+1*32);
+			length     = w.data(SNIC_OP_OFFSET+2*32+32-1, SNIC_OP_OFFSET+2*32);
 			dataFromEndpoint2TCP.write(w);
-		} else if (mode == 3) {
+		} else if (op == SNIC_TCP_HANDLER_OP_CLOSE) {
 			closeConnection.write(0);
 		}
 	}
@@ -296,7 +367,13 @@ void snic_handler(hls::stream<ap_uint<16> > &listenPort,
 #pragma HLS STREAM variable = internalListenConnMeta depth = 32
 
 	static hls::stream<net_axis<DATA_WIDTH> > dataFromEndpoint2TCP("dataFromEndpoint2TCP");
-#pragma HLS STREAM variable = dataFromEndpoint2TCP depth = 8
+#pragma HLS STREAM variable = dataFromEndpoint2TCP depth = 16
+
+	static hls::stream<net_axis<DATA_WIDTH> > reply_dataToEndpoint("dataFromEndpoint2TCP");
+#pragma HLS STREAM variable = reply_dataToEndpoint depth = 16
+
+	static hls::stream<net_axis<DATA_WIDTH> > data_dataToEndpoint("dataFromEndpoint2TCP");
+#pragma HLS STREAM variable = data_dataToEndpoint depth = 16
 
 	buffer_txStatus(txStatus, txStatusBuffer);
 
@@ -305,8 +382,12 @@ void snic_handler(hls::stream<ap_uint<16> > &listenPort,
 				  closeConnection);
 
 	client<DATA_WIDTH>(openConnection, openConStatus, txMetaData, txData,
-			   txStatusBuffer, internalOpenConnMeta, dataFromEndpoint2TCP);
+			   txStatusBuffer, internalOpenConnMeta, dataFromEndpoint2TCP,
+			   reply_dataToEndpoint);
 
 	server<DATA_WIDTH>(listenPort, listenPortStatus, notifications, readRequest, rxMetaData, rxData,
-			   internalListenConnMeta, dataToEndpoint);
+			   internalListenConnMeta,
+			   data_dataToEndpoint);
+
+	mergeOutput<DATA_WIDTH>(reply_dataToEndpoint, data_dataToEndpoint, dataToEndpoint);
 }
