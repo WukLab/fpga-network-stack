@@ -156,13 +156,6 @@ assign m_axis_mem_read_cmd[ddrPortNetworkTx].address = {32'h0000_0000, axis_read
 assign m_axis_mem_read_cmd[ddrPortNetworkTx].length = {9'h00, axis_read_cmd_data[ddrPortNetworkTx][22:0]};
 
 
-
-//TOE Module with RX_DDR_BYPASS disabled
-if (RX_DDR_BYPASS_EN == 0) begin
-$error("Error");
-end
-else begin //RX_DDR_BYPASS_EN == 1
-
 //TOE Module with RX_DDR_BYPASS enabled
 toe_ip toe_inst (
     // Data output
@@ -292,13 +285,7 @@ toe_ip toe_inst (
     .ap_clk(net_clk),                                                        // input aclk
     .ap_rst_n(net_aresetn)                                                   // input aresetn
 );
-end //RX_DDR_BYPASS_EN
 
-
-
-if (RX_DDR_BYPASS_EN == 1) begin
-//RX BUFFER FIFO
-if (WIDTH==512) begin
 axis_data_fifo_512_d1024 rx_buffer_fifo (
   .s_axis_aresetn(net_aresetn),          // input wire s_axis_aresetn
   .s_axis_aclk(net_clk),                // input wire s_axis_aclk
@@ -315,41 +302,13 @@ axis_data_fifo_512_d1024 rx_buffer_fifo (
   .axis_wr_data_count(rx_buffer_data_count),
   .axis_rd_data_count()
 );
-end
 
 //register data_count
 always @(posedge net_clk) begin
     rx_buffer_data_count_reg <= rx_buffer_data_count[15:0];
     rx_buffer_data_count_reg2 <= rx_buffer_data_count_reg;
 end
-end //RX_DDR_BYPASS_EN
 
-/*SmartCamCtl SmartCamCtl_inst
-(
-.clk(net_clk),
-.rst(~net_aresetn),
-.led0(),//(sc_led0),
-.led1(),//(sc_led1),
-.cam_ready(),//(cam_ready),
-
-.lup_req_valid(lup_req_TVALID),
-.lup_req_ready(lup_req_TREADY),
-.lup_req_din(lup_req_TDATA),
-
-.lup_rsp_valid(lup_rsp_TVALID),
-.lup_rsp_ready(lup_rsp_TREADY),
-.lup_rsp_dout(lup_rsp_TDATA),
-
-.upd_req_valid(upd_req_TVALID),
-.upd_req_ready(upd_req_TREADY),
-.upd_req_din(upd_req_TDATA),
-
-.upd_rsp_valid(upd_rsp_TVALID),
-.upd_rsp_ready(upd_rsp_TREADY),
-.upd_rsp_dout(upd_rsp_TDATA),
-
-.debug()
-);*/
 
 logic       ht_insert_failure_count_valid;
 logic[15:0] ht_insert_failure_count;
@@ -373,26 +332,6 @@ hash_table_ip hash_table_inst (
   .regInsertFailureCount_V(ht_insert_failure_count)
 );
 
-if (WIDTH==512) begin
-    /*
-     * TODO YS
-     * Not sure if this is correct.
-     */
-    //TCP Data Path
-    if (RX_DDR_BYPASS_EN == 0) begin
-        assign axis_rxread_data.valid = s_axis_mem_read_data[ddrPortNetworkRx].valid;
-        assign s_axis_mem_read_data[ddrPortNetworkRx].ready = axis_rxread_data.ready;
-        assign axis_rxread_data.data = s_axis_mem_read_data[ddrPortNetworkRx].data;
-        assign axis_rxread_data.keep = s_axis_mem_read_data[ddrPortNetworkRx].keep;
-        assign axis_rxread_data.last = s_axis_mem_read_data[ddrPortNetworkRx].last;
-        
-        assign m_axis_mem_write_data[ddrPortNetworkRx].valid = axis_rxwrite_data.valid;
-        assign axis_rxwrite_data.ready = m_axis_mem_write_data[ddrPortNetworkRx].ready;
-        assign m_axis_mem_write_data[ddrPortNetworkRx].data = axis_rxwrite_data.data;
-        assign m_axis_mem_write_data[ddrPortNetworkRx].keep = axis_rxwrite_data.keep;
-        assign m_axis_mem_write_data[ddrPortNetworkRx].last = axis_rxwrite_data.last;
-    end
-
     assign axis_txread_data.valid = s_axis_mem_read_data[ddrPortNetworkTx].valid;
     assign s_axis_mem_read_data[ddrPortNetworkTx].ready = axis_txread_data.ready;
     assign axis_txread_data.data = s_axis_mem_read_data[ddrPortNetworkTx].data;
@@ -403,10 +342,6 @@ if (WIDTH==512) begin
     assign m_axis_mem_write_data[ddrPortNetworkTx].data = axis_txwrite_data.data;
     assign m_axis_mem_write_data[ddrPortNetworkTx].keep = axis_txwrite_data.keep;
     assign m_axis_mem_write_data[ddrPortNetworkTx].last = axis_txwrite_data.last;
-end
-
-
-
 
 
 
