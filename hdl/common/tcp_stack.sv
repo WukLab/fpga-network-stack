@@ -1,29 +1,3 @@
-/*
- * Copyright (c) 2019, Systems Group, ETH Zurich
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holder nor the names of its contributors
- * may be used to endorse or promote products derived from this software
- * without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
 `timescale 1ns / 1ps
 `default_nettype none
 
@@ -84,27 +58,6 @@ localparam ddrPortNetworkTx = 0;
 generate
 if (TCP_EN == 1) begin
 
-// SmartCAM signals
-/*wire        upd_req_TVALID;
-wire        upd_req_TREADY;
-wire[111:0] upd_req_TDATA; //(1 + 1 + 14 + 96) - 1 = 111
-wire        upd_rsp_TVALID;
-wire        upd_rsp_TREADY;
-wire[15:0]  upd_rsp_TDATA;
-
-wire        ins_req_TVALID;
-wire        ins_req_TREADY;
-wire[111:0] ins_req_TDATA;
-wire        del_req_TVALID;
-wire        del_req_TREADY;
-wire[111:0] del_req_TDATA;
-
-wire        lup_req_TVALID;
-wire        lup_req_TREADY;
-wire[97:0]  lup_req_TDATA; //should be 96, also wrong in SmartCam
-wire        lup_rsp_TVALID;
-wire        lup_rsp_TREADY;
-wire[15:0]  lup_rsp_TDATA;*/
 // Hash Table signals
 axis_meta #(.WIDTH(72))     axis_ht_lup_req();
 axis_meta #(.WIDTH(88))     axis_ht_lup_rsp();
@@ -128,7 +81,6 @@ axis_meta #(.WIDTH(32))     axis_read_package();
 axis_meta #(.WIDTH(16))     axis_rx_metadata();
 axis_meta #(.WIDTH(32))     axis_tx_metadata();
 
-
 wire[31:0] rx_buffer_data_count;
 reg[15:0] rx_buffer_data_count_reg;
 reg[15:0] rx_buffer_data_count_reg2;
@@ -144,17 +96,10 @@ assign s_axis_mem_read_sts[ddrPortNetworkTx].ready = 1'b1;
 //hack for now //TODO
 wire[71:0] axis_write_cmd_data [1:0];
 wire[71:0] axis_read_cmd_data [1:0];
-if (RX_DDR_BYPASS_EN == 0) begin
-    assign m_axis_mem_write_cmd[ddrPortNetworkRx].address = {32'h0000_0000, axis_write_cmd_data[ddrPortNetworkRx][63:32]};
-    assign m_axis_mem_write_cmd[ddrPortNetworkRx].length = {9'h00, axis_write_cmd_data[ddrPortNetworkRx][22:0]};
-    assign m_axis_mem_read_cmd[ddrPortNetworkRx].address = {32'h0000_0000, axis_read_cmd_data[ddrPortNetworkRx][63:32]};
-    assign m_axis_mem_read_cmd[ddrPortNetworkRx].length = {9'h00, axis_read_cmd_data[ddrPortNetworkRx][22:0]};
-end
 assign m_axis_mem_write_cmd[ddrPortNetworkTx].address = {32'h0000_0000, axis_write_cmd_data[ddrPortNetworkTx][63:32]};
 assign m_axis_mem_write_cmd[ddrPortNetworkTx].length = {9'h00, axis_write_cmd_data[ddrPortNetworkTx][22:0]};
 assign m_axis_mem_read_cmd[ddrPortNetworkTx].address = {32'h0000_0000, axis_read_cmd_data[ddrPortNetworkTx][63:32]};
 assign m_axis_mem_read_cmd[ddrPortNetworkTx].length = {9'h00, axis_read_cmd_data[ddrPortNetworkTx][22:0]};
-
 
 //TOE Module with RX_DDR_BYPASS enabled
 toe_ip toe_inst (
@@ -208,11 +153,11 @@ toe_ip toe_inst (
     .m_axis_txwrite_data_TDATA(axis_txwrite_data.data),
     .m_axis_txwrite_data_TKEEP(axis_txwrite_data.keep),
     .m_axis_txwrite_data_TLAST(axis_txwrite_data.last),
+
     /// SmartCAM I/F ///
     .m_axis_session_upd_req_V_TVALID(axis_ht_upd_req.valid),
     .m_axis_session_upd_req_V_TREADY(axis_ht_upd_req.ready),
     .m_axis_session_upd_req_V_TDATA(axis_ht_upd_req.data),
-
     .s_axis_session_upd_rsp_V_TVALID(axis_ht_upd_rsp.valid),
     .s_axis_session_upd_rsp_V_TREADY(axis_ht_upd_rsp.ready),
     .s_axis_session_upd_rsp_V_TDATA(axis_ht_upd_rsp.data),
@@ -322,27 +267,28 @@ hash_table_ip hash_table_inst (
   .m_axis_lup_rsp_V_TVALID(axis_ht_lup_rsp.valid),
   .m_axis_lup_rsp_V_TREADY(axis_ht_lup_rsp.ready),
   .m_axis_lup_rsp_V_TDATA(axis_ht_lup_rsp.data),
+
   .s_axis_upd_req_V_TVALID(axis_ht_upd_req.valid),
   .s_axis_upd_req_V_TREADY(axis_ht_upd_req.ready),
   .s_axis_upd_req_V_TDATA(axis_ht_upd_req.data),
   .m_axis_upd_rsp_V_TVALID(axis_ht_upd_rsp.valid),
   .m_axis_upd_rsp_V_TREADY(axis_ht_upd_rsp.ready),
   .m_axis_upd_rsp_V_TDATA(axis_ht_upd_rsp.data),
+
   .regInsertFailureCount_V_ap_vld(ht_insert_failure_count_valid),
   .regInsertFailureCount_V(ht_insert_failure_count)
 );
 
-    assign axis_txread_data.valid = s_axis_mem_read_data[ddrPortNetworkTx].valid;
-    assign s_axis_mem_read_data[ddrPortNetworkTx].ready = axis_txread_data.ready;
-    assign axis_txread_data.data = s_axis_mem_read_data[ddrPortNetworkTx].data;
-    assign axis_txread_data.keep = s_axis_mem_read_data[ddrPortNetworkTx].keep;
-    assign axis_txread_data.last = s_axis_mem_read_data[ddrPortNetworkTx].last;
-    assign m_axis_mem_write_data[ddrPortNetworkTx].valid = axis_txwrite_data.valid;
-    assign axis_txwrite_data.ready = m_axis_mem_write_data[ddrPortNetworkTx].ready;
-    assign m_axis_mem_write_data[ddrPortNetworkTx].data = axis_txwrite_data.data;
-    assign m_axis_mem_write_data[ddrPortNetworkTx].keep = axis_txwrite_data.keep;
-    assign m_axis_mem_write_data[ddrPortNetworkTx].last = axis_txwrite_data.last;
-
+assign axis_txread_data.valid = s_axis_mem_read_data[ddrPortNetworkTx].valid;
+assign s_axis_mem_read_data[ddrPortNetworkTx].ready = axis_txread_data.ready;
+assign axis_txread_data.data = s_axis_mem_read_data[ddrPortNetworkTx].data;
+assign axis_txread_data.keep = s_axis_mem_read_data[ddrPortNetworkTx].keep;
+assign axis_txread_data.last = s_axis_mem_read_data[ddrPortNetworkTx].last;
+assign m_axis_mem_write_data[ddrPortNetworkTx].valid = axis_txwrite_data.valid;
+assign axis_txwrite_data.ready = m_axis_mem_write_data[ddrPortNetworkTx].ready;
+assign m_axis_mem_write_data[ddrPortNetworkTx].data = axis_txwrite_data.data;
+assign m_axis_mem_write_data[ddrPortNetworkTx].keep = axis_txwrite_data.keep;
+assign m_axis_mem_write_data[ddrPortNetworkTx].last = axis_txwrite_data.last;
 
 
 // Register slices to avoid combinatorial loops created by HLS due to the new axis INTERFACE (enforced since 19.1)

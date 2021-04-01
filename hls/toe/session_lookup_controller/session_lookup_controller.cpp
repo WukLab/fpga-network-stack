@@ -114,14 +114,17 @@ void lookupReplyHandler(stream<rtlSessionLookupReply>&			sessionLookup_rsp,
 		if (!txApp2sLookup_req.empty())
 		{
 			txApp2sLookup_req.read(toeTuple);
+
 			intQuery.tuple.theirIp = toeTuple.dstIp;
 			intQuery.tuple.theirPort = toeTuple.dstPort;
 			//intQuery.tuple.myIp = toeTuple.srcIp;
 			intQuery.tuple.myPort = toeTuple.srcPort;
 			intQuery.allowCreation = true;
 			intQuery.source = TX_APP;
+
 			sessionLookup_req.write(rtlSessionLookupRequest(intQuery.tuple, intQuery.source));
 			slc_queryCache.write(intQuery);
+
 			slc_fsmState = LUP_RSP;
 		}
 		else if (!rxEng2sLooup_req.empty())
@@ -143,6 +146,7 @@ void lookupReplyHandler(stream<rtlSessionLookupReply>&			sessionLookup_rsp,
 		{
 			sessionLookup_rsp.read(lupReply);
 			slc_queryCache.read(intQuery);
+
 			if (!lupReply.hit && intQuery.allowCreation && !sessionIdFreeList.empty())
 			{
 				sessionIdFreeList.read(freeID);

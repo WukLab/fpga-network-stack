@@ -82,15 +82,38 @@ void tx_app_if(	stream<ipTuple>&				appOpenConnReq,
 	ap_uint<16> freePort;
 	openStatus openSessionStatus;
 
+	/*
+	 * NOTE YS
+	 *
+	 * New OPEN request.
+	 * Send a lookup&insert request to hash_table (session)
+	 */
 	if (!appOpenConnReq.empty() && !portTable2txApp_port_rsp.empty())
 	{
+		/*
+		 * NOTE YS
+		 *
+		 * Okay this is the place to choose free port.
+		 * Can you let ipTuple to pass this?
+		 */
 		appOpenConnReq.read(server_addr);
 		portTable2txApp_port_rsp.read(freePort);
+
 		// Implicit creationAllowed <= true
-		txApp2sLookup_req.write(fourTuple(myIpAddress, reverse(server_addr.ip_address), reverse(freePort), reverse(server_addr.ip_port)));
-		//tai_waitFreePort = false;
+		txApp2sLookup_req.write(
+				fourTuple(myIpAddress,
+						  reverse(server_addr.ip_address),
+						  reverse(freePort),
+						  reverse(server_addr.ip_port))
+		);
 	}
 
+	/*
+	 * NOTE YS
+	 *
+	 * this loop wait for reply from the sesssion lookup code
+	 * (i.e., hash_tabel lookup)
+	 */
 	switch (tai_fsmState)
 	{
 	case IDLE:
@@ -98,6 +121,7 @@ void tx_app_if(	stream<ipTuple>&				appOpenConnReq,
 		{
 			// Read session
 			sLookup2txApp_rsp.read(session);
+
 			// Get session state
 			if (session.hit)
 			{

@@ -1026,6 +1026,11 @@ void generate_ipv4( //stream<ipv4Meta>&    txEng_ipMetaDataFifoIn,
 	//} //else
 }*/
 
+/*
+ * NOTE YS
+ *
+ * This function will attach the IP headers.
+ */
 template <int WIDTH>
 void pseudoHeaderConstructionNew(stream<tx_engine_meta>&		tcpMetaDataFifoIn,
 								stream<fourTuple>&			tcpTupleFifoIn,

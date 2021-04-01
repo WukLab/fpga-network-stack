@@ -456,10 +456,9 @@ void toe(	// Data & Memory Interface
 			stream<mmCmd>&							txBufferReadCmd,
 			stream<net_axis<WIDTH> >&						rxBufferWriteData,
 			stream<net_axis<WIDTH> >&						txBufferWriteData,
-			// SmartCam Interface
+			// hash_table Interface
 			stream<rtlSessionLookupReply>&			sessionLookup_rsp,
 			stream<rtlSessionUpdateReply>&			sessionUpdate_rsp,
-			//stream<ap_uint<14> >&					readFinSessionId,
 			stream<rtlSessionLookupRequest>&		sessionLookup_req,
 			stream<rtlSessionUpdateRequest>&		sessionUpdate_req,
 			//stream<rtlSessionUpdateRequest>&		sessionInsert_req,
@@ -843,7 +842,7 @@ void toe_top(	// Data & Memory Interface
 			stream<net_axis<DATA_WIDTH> >&						rxBufferWriteData,
 			stream<net_axis<DATA_WIDTH> >&						txBufferWriteData,
 
-			// SmartCam Interface
+			// hash_table Interface
 			stream<rtlSessionLookupReply>&			sessionLookup_rsp,
 			stream<rtlSessionUpdateReply>&			sessionUpdate_rsp,
 			stream<rtlSessionLookupRequest>&		sessionLookup_req,
@@ -910,7 +909,7 @@ void toe_top(	// Data & Memory Interface
 	#pragma HLS INTERFACE axis register port=txBufferWriteStatus name=s_axis_txwrite_sts
 	#pragma HLS DATA_PACK variable=txBufferWriteStatus
 
-	// SmartCam Interface
+	// hashtable Interface
 	#pragma HLS INTERFACE axis register port=sessionLookup_req name=m_axis_session_lup_req
 	#pragma HLS INTERFACE axis register port=sessionLookup_rsp name=s_axis_session_lup_rsp
 	#pragma HLS INTERFACE axis register port=sessionUpdate_req name=m_axis_session_upd_req
