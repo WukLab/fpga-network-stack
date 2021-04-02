@@ -81,6 +81,7 @@ add_subdirectory(hls/toe)
 #add_subdirectory(hls/rocev2)
 add_subdirectory(hls/hash_table)
 add_subdirectory(hls/snic_handler)
+add_subdirectory(hls/snic_tcp_wrapper)
 
 if (NOT hasParent)
    add_subdirectory(hls/ethernet_frame_padding)
