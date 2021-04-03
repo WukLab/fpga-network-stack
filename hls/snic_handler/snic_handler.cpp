@@ -58,6 +58,10 @@ void client(hls::stream<ipTuple> &openConnection,
 		if (!internalOpenConnMeta.empty()) {
 			open = internalOpenConnMeta.read();
 
+			/*
+			 * Both ip_address and ip_port are little-endian
+			 * (the x86 host order)
+			 */
 			ipTuple openTuple;
 			openTuple.ip_address = open.remote_ip;
 			openTuple.ip_port = open.remote_port;
@@ -72,7 +76,7 @@ void client(hls::stream<ipTuple> &openConnection,
 			openStatus status = openConStatus.read();
 			ap_uint<16> sessionID = status.sessionID;
 
-			printf("Open status: %d sessionID: %#x\n", status.success, sessionID.to_uint());
+			//printf("Open status: %d sessionID: %#x\n", status.success, sessionID.to_uint());
 
 			/*
 			 * Let's send the session id back to the original host.
@@ -272,14 +276,23 @@ void parse_packets(hls::stream<net_axis<WIDTH> > &dataFromEndpoint,
 		   hls::stream<net_axis<WIDTH> > &dataFromEndpoint2TCP,
 		   hls::stream<ap_uint<16> > &closeConnection)
 {
-	struct internalOpenConnMeta open;
-	struct internalListenConnMeta listen;
+	static struct internalOpenConnMeta open;
+	static struct internalListenConnMeta listen;
 
+	/*
+	 * FAT NOTE
+	 *
+	 * All these snic fields sent over are little-endian,
+	 * the same with x86. This works fine as long as all
+	 * parities use little-endian.
+	 */
 	if (!dataFromEndpoint.empty()) {
 		net_axis<WIDTH> w = dataFromEndpoint.read();
 
-		int op = w.data(SNIC_OP_OFFSET+32-1, SNIC_OP_OFFSET);
-		unsigned int local_port;
+		static int op = w.data(SNIC_OP_OFFSET+32-1, SNIC_OP_OFFSET);
+		static int local_port = 0;
+		static int remote_ip = 0;
+		static int remote_port = 0;
 
 		/*
 		 * TODO
@@ -287,10 +300,12 @@ void parse_packets(hls::stream<net_axis<WIDTH> > &dataFromEndpoint,
 		 * from host port -> session_id -> remote_ip:remote_port
 		 */
 		if (op == SNIC_TCP_HANDLER_OP_OPEN_CONN) {
-			local_port  = w.data(SNIC_OP_OFFSET+1*32+32-1, SNIC_OP_OFFSET+1*32);
-			open.remote_ip   = w.data(SNIC_OP_OFFSET+2*32+32-1, SNIC_OP_OFFSET+2*32);
-			open.remote_port = w.data(SNIC_OP_OFFSET+3*32+32-1, SNIC_OP_OFFSET+3*32);
+			local_port       = w.data(SNIC_OP_OFFSET+1*32+32-1, SNIC_OP_OFFSET+1*32);
+			remote_ip   = w.data(SNIC_OP_OFFSET+2*32+32-1, SNIC_OP_OFFSET+2*32);
+			remote_port = w.data(SNIC_OP_OFFSET+3*32+32-1, SNIC_OP_OFFSET+3*32);
 
+			open.remote_ip = remote_ip;
+			open.remote_port = remote_port;
 			internalOpenConnMeta.write(open);
 		} else if (op == SNIC_TCP_HANDLER_OP_LISTEN) {
 			//listen.local_port = port;
@@ -363,8 +378,8 @@ void snic_handler(hls::stream<ap_uint<16> > &listenPort,
 
 	static hls::stream<struct internalOpenConnMeta> internalOpenConnMeta("internalOpenConnMeta");
 	static hls::stream<struct internalListenConnMeta> internalListenConnMeta("internalListenConnMeta");
-#pragma HLS STREAM variable = internalOpenConnMeta depth = 32
-#pragma HLS STREAM variable = internalListenConnMeta depth = 32
+#pragma HLS STREAM variable = internalOpenConnMeta depth = 16
+#pragma HLS STREAM variable = internalListenConnMeta depth = 16
 
 	static hls::stream<net_axis<DATA_WIDTH> > dataFromEndpoint2TCP("dataFromEndpoint2TCP");
 #pragma HLS STREAM variable = dataFromEndpoint2TCP depth = 16
