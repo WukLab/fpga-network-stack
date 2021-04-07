@@ -1654,7 +1654,7 @@ void tx_engine(	stream<extendedEvent>&			eventEng2txEng_event,
 	#pragma HLS stream variable=txEng_shift2pseudoFifo depth=2
 	#pragma HLS stream variable=txEng_tcpPkgBuffer0 depth=2
 	#pragma HLS stream variable=txEng_tcpPkgBuffer1 depth=16   // is forwarded immediately, size is not critical
-	#pragma HLS stream variable=txEng_tcpPkgBuffer2 depth=256  // critical, has to keep complete packet for checksum computation
+	#pragma HLS stream variable=txEng_tcpPkgBuffer2 depth=128  // critical, has to keep complete packet for checksum computation
 	#pragma HLS stream variable=txEng_tcpPkgBuffer3 depth=2
 	#pragma HLS stream variable=txEng_tcpPkgBuffer4 depth=2
 	#pragma HLS stream variable=txEng_tcpPkgBuffer5 depth=2
@@ -1682,20 +1682,20 @@ void tx_engine(	stream<extendedEvent>&			eventEng2txEng_event,
 	static stream<fourTuple>		txEng_tcpTupleFifo("txEng_tcpTupleFifo");
 	#pragma HLS stream variable=txEng_tupleShortCutFifo depth=2
 	#pragma HLS stream variable=txEng_isLookUpFifo depth=4
-	#pragma HLS stream variable=txEng_ipTupleFifo depth=32
-	#pragma HLS stream variable=txEng_tcpTupleFifo depth=32
+	#pragma HLS stream variable=txEng_ipTupleFifo depth=16
+	#pragma HLS stream variable=txEng_tcpTupleFifo depth=16
 	#pragma HLS DATA_PACK variable=txEng_tupleShortCutFifo
 	#pragma HLS DATA_PACK variable=txEng_ipTupleFifo
 	#pragma HLS DATA_PACK variable=txEng_tcpTupleFifo
 
 	static stream<mmCmd> txMetaloader2memAccessBreakdown("txMetaloader2memAccessBreakdown");
-	#pragma HLS stream variable=txMetaloader2memAccessBreakdown depth=32
+	#pragma HLS stream variable=txMetaloader2memAccessBreakdown depth=16
 	#pragma HLS DATA_PACK variable=txMetaloader2memAccessBreakdown
 	static stream<bool> memAccessBreakdown2txPkgStitcher("memAccessBreakdown2txPkgStitcher");
-	#pragma HLS stream variable=memAccessBreakdown2txPkgStitcher depth=32
+	#pragma HLS stream variable=memAccessBreakdown2txPkgStitcher depth=16
 	
 	static stream<bool> txEng_isDDRbypass("txEng_isDDRbypass");
-	#pragma HLS stream variable=txEng_isDDRbypass depth=32
+	#pragma HLS stream variable=txEng_isDDRbypass depth=16
 
 
 	metaLoader(	eventEng2txEng_event,

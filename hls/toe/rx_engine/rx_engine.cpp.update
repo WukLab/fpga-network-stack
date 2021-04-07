@@ -1494,7 +1494,7 @@ void rx_engine(	stream<axiWord>&					ipRxData,
 	static stream<axiWord>		rxEng_dataBuffer3("rxEng_dataBuffer3");
 	#pragma HLS stream variable=rxEng_dataBuffer0 depth=8
 	#pragma HLS stream variable=rxEng_dataBuffer1 depth=8
-	#pragma HLS stream variable=rxEng_dataBuffer2 depth=256 //critical, tcp checksum computation
+	#pragma HLS stream variable=rxEng_dataBuffer2 depth=128 //critical, tcp checksum computation
 	#pragma HLS stream variable=rxEng_dataBuffer3 depth=8
 	#pragma HLS DATA_PACK variable=rxEng_dataBuffer0
 	#pragma HLS DATA_PACK variable=rxEng_dataBuffer1

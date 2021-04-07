@@ -44,7 +44,9 @@ module network_stack #(
     
     axis_meta.slave     s_axis_tx_metadata,
     axi_stream.slave    s_axis_tx_data,
-    axis_meta.master    m_axis_tx_status
+    axis_meta.master    m_axis_tx_status,
+    
+    input wire[31:0]    local_ip_address
 );
 
 logic       session_count_valid;
@@ -91,7 +93,7 @@ tcp_stack #(
      // NOTE Yizhou
      // We will use a separate module to manipulate
      // ip and mac anyway. so no need to use a valid IP.
-     .local_ip_address(32'h00000000),
+     .local_ip_address(local_ip_address),
      .session_count_valid(session_count_valid),
      .session_count_data(session_count_data)
 );

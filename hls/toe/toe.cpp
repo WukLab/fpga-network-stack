@@ -604,7 +604,7 @@ void toe(	// Data & Memory Interface
 	static stream<event>					timer2eventEng_setEvent("timer2eventEng_setEvent");
 	static stream<extendedEvent>			eventEng2ackDelay_event("eventEng2ackDelay_event");
 	static stream<extendedEvent>			eventEng2txEng_event("eventEng2txEng_event");
-	#pragma HLS stream variable=rxEng2eventEng_setEvent				depth=512
+	#pragma HLS stream variable=rxEng2eventEng_setEvent				depth=128
 	#pragma HLS stream variable=txApp2eventEng_setEvent			depth=4
 	#pragma HLS stream variable=timer2eventEng_setEvent			depth=4 //TODO maybe reduce to 2, there should be no evil cycle
 	#pragma HLS stream variable=eventEng2ackDelay_event				depth=4
@@ -647,7 +647,8 @@ void toe(	// Data & Memory Interface
 	#pragma HLS stream variable=sLookup2portTable_releasePort		depth=4
 
    static stream<net_axis<WIDTH> >                 txApp2txEng_data_stream("txApp2txEng_data_stream");
-   #pragma HLS stream variable=txApp2txEng_data_stream   depth=1024
+   #pragma HLS stream variable=txApp2txEng_data_stream   depth=128
+
 	/*
 	 * Data Structures
 	 */
