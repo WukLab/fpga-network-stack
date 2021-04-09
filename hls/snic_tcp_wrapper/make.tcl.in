@@ -21,7 +21,8 @@ if {$command == "synthesis"} {
 } elseif {$command == "csim"} {
    csim_design
 } elseif {$command == "ip"} {
-   export_design -format ip_catalog -ipname "snic_tcp_wrapper" -display_name "snic_tcp_wrapper" -vendor "wuklab.io" -version "1.0"
+   export_design -format ip_catalog -ipname "snic_tcp_wrapper" -display_name "snic_tcp_wrapper" -vendor "wuklab.io" -version "1.0" \
+	   -description "toTCP: extract ethernet headers. fromTCP: add back ethernet headers."
 } elseif {$command == "installip"} {
    file mkdir ${IPREPO_DIR}
    file delete -force ${IPREPO_DIR}/${PROJECT_NAME}

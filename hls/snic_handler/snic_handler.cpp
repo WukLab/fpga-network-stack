@@ -374,21 +374,21 @@ void snic_handler(hls::stream<ap_uint<16> > &listenPort,
 
 	// This is required to buffer up to 1024 reponses => supporting up to 1024 connections
 	static hls::stream<appTxRsp> txStatusBuffer("txStatusBuffer");
-#pragma HLS STREAM variable = txStatusBuffer depth = 32
+#pragma HLS STREAM variable = txStatusBuffer depth = 16
 
 	static hls::stream<struct internalOpenConnMeta> internalOpenConnMeta("internalOpenConnMeta");
 	static hls::stream<struct internalListenConnMeta> internalListenConnMeta("internalListenConnMeta");
-#pragma HLS STREAM variable = internalOpenConnMeta depth = 16
-#pragma HLS STREAM variable = internalListenConnMeta depth = 16
+#pragma HLS STREAM variable = internalOpenConnMeta depth = 8
+#pragma HLS STREAM variable = internalListenConnMeta depth = 8
 
 	static hls::stream<net_axis<DATA_WIDTH> > dataFromEndpoint2TCP("dataFromEndpoint2TCP");
-#pragma HLS STREAM variable = dataFromEndpoint2TCP depth = 16
+#pragma HLS STREAM variable = dataFromEndpoint2TCP depth = 8
 
 	static hls::stream<net_axis<DATA_WIDTH> > reply_dataToEndpoint("dataFromEndpoint2TCP");
-#pragma HLS STREAM variable = reply_dataToEndpoint depth = 16
+#pragma HLS STREAM variable = reply_dataToEndpoint depth = 8
 
 	static hls::stream<net_axis<DATA_WIDTH> > data_dataToEndpoint("dataFromEndpoint2TCP");
-#pragma HLS STREAM variable = data_dataToEndpoint depth = 16
+#pragma HLS STREAM variable = data_dataToEndpoint depth = 8
 
 	buffer_txStatus(txStatus, txStatusBuffer);
 
