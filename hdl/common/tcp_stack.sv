@@ -72,7 +72,7 @@ axi_stream #(.WIDTH(WIDTH) )   axis_txread_data();
 
 axis_meta #(.WIDTH(16))     axis_listen_port();
 axis_meta #(.WIDTH(8))      axis_listen_port_status();
-axis_meta #(.WIDTH(48))     axis_open_connection();
+axis_meta #(.WIDTH(64))     axis_open_connection();
 axis_meta #(.WIDTH(24))     axis_open_status();
 axis_meta #(.WIDTH(16))     axis_close_connection();
 
@@ -315,7 +315,7 @@ axis_register_slice_8 port_status_slice (
   .m_axis_tdata(m_axis_listen_port_status.data)    // output wire [7 : 0] m_axis_tdata
 );
 
-axis_register_slice_48 open_connection_slice (
+axis_register_slice_64 open_connection_slice (
   .aclk(net_clk),                    // input wire aclk
   .aresetn(net_aresetn),              // input wire aresetn
   .s_axis_tvalid(s_axis_open_connection.valid),  // input wire s_axis_tvalid

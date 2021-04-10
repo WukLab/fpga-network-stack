@@ -16,6 +16,7 @@ struct map_entry map_table[NR_MAX_ENTRIES];
 struct internalOpenConnMeta {
 	ap_uint<32> remote_ip;
 	ap_uint<16> remote_port;
+	ap_uint<16> local_port;
 };
 
 struct internalListenConnMeta {
@@ -65,6 +66,7 @@ void client(hls::stream<ipTuple> &openConnection,
 			ipTuple openTuple;
 			openTuple.ip_address = open.remote_ip;
 			openTuple.ip_port = open.remote_port;
+			openTuple.local_port = open.local_port;
 
 			openConnection.write(openTuple);
 
@@ -73,26 +75,32 @@ void client(hls::stream<ipTuple> &openConnection,
 		break;
 	case WAIT_CON:
 		if (!openConStatus.empty()) {
+			/*
+			 * With our modified version, the returned sessionID
+			 * is the local_port.
+			 */
 			openStatus status = openConStatus.read();
 			ap_uint<16> sessionID = status.sessionID;
-
-			//printf("Open status: %d sessionID: %#x\n", status.success, sessionID.to_uint());
 
 			/*
 			 * Let's send the session id back to the original host.
 			 * struct snic_handler_open_conn_reply
+			 *
+			 * Leave the Eth/IP/UDP headers to the Scala code.
 			 */
-			if (status.success) {
-				net_axis<WIDTH> w;
+			net_axis<WIDTH> w;
 
-				w.data(511, 0) = 0;
-				w.data(14*8-1, 12*8) = 0xa000; // mac eth_type
-				w.data(SNIC_OP_OFFSET+32-1, SNIC_OP_OFFSET) = SNIC_TCP_HANDLER_OP_OPEN_CONN_REPLY; //op
-				w.data(SNIC_OP_OFFSET+32+16-1, SNIC_OP_OFFSET+32) = sessionID; //sessionID
-				w.keep = 0xFFFFFFFFFFFFFFFF;
-				w.last = 1;
-				dataToEndpoint.write(w);
-			}
+			w.keep = 0xFFFFFFFFFFFFFFFF;
+			w.last = 1;
+
+			w.data(511, 0) = 0;
+			//w.data(14*8-1, 12*8) = 0x01A0;
+			w.data(SNIC_OP_OFFSET+32-1, SNIC_OP_OFFSET) = SNIC_TCP_HANDLER_OP_OPEN_CONN_REPLY; //op
+			w.data(SNIC_OP_OFFSET+32+16-1, SNIC_OP_OFFSET+32) = sessionID; //sessionID
+			w.data(SNIC_OP_OFFSET+32+16+16-1, SNIC_OP_OFFSET+32+16) = status.success;
+
+			dataToEndpoint.write(w);
+
 			openFsmState = IDLE;
 		}
 		break;
@@ -294,16 +302,12 @@ void parse_packets(hls::stream<net_axis<WIDTH> > &dataFromEndpoint,
 		static int remote_ip = 0;
 		static int remote_port = 0;
 
-		/*
-		 * TODO
-		 * We need a table to map from session_id to remote_ip:remote_port
-		 * from host port -> session_id -> remote_ip:remote_port
-		 */
 		if (op == SNIC_TCP_HANDLER_OP_OPEN_CONN) {
-			local_port       = w.data(SNIC_OP_OFFSET+1*32+32-1, SNIC_OP_OFFSET+1*32);
+			local_port  = w.data(SNIC_OP_OFFSET+1*32+32-1, SNIC_OP_OFFSET+1*32);
 			remote_ip   = w.data(SNIC_OP_OFFSET+2*32+32-1, SNIC_OP_OFFSET+2*32);
 			remote_port = w.data(SNIC_OP_OFFSET+3*32+32-1, SNIC_OP_OFFSET+3*32);
 
+			open.local_port = local_port;
 			open.remote_ip = remote_ip;
 			open.remote_port = remote_port;
 			internalOpenConnMeta.write(open);
