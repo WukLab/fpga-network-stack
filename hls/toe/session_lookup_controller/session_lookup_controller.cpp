@@ -103,7 +103,7 @@ void lookupReplyHandler(stream<rtlSessionLookupReply>&			sessionLookup_rsp,
 	rtlSessionLookupReply lupReply;
 	rtlSessionUpdateReply insertReply;
 	ap_uint<16> sessionID;
-	ap_uint<14> freeID = 0;
+	ap_uint<16> freeID = 0;
 
 	enum slcFsmStateType {LUP_REQ, LUP_RSP, UPD_RSP};
 	static slcFsmStateType slc_fsmState = LUP_REQ;
@@ -149,7 +149,15 @@ void lookupReplyHandler(stream<rtlSessionLookupReply>&			sessionLookup_rsp,
 
 			if (!lupReply.hit && intQuery.allowCreation && !sessionIdFreeList.empty())
 			{
-				sessionIdFreeList.read(freeID);
+				/*
+				 * NOTE YS
+				 *
+				 * Here we change to use the local port as the session id.
+				 * The local port is not allocated by TCP module either,
+				 * I've changed to let caller pass it during open time.
+				 */
+				//sessionIdFreeList.read(freeID);
+				freeID = intQuery.tuple.myPort;
 				sessionInsert_req.write(rtlSessionUpdateRequest(intQuery.tuple, freeID, INSERT, lupReply.source));
 				slc_insertTuples.write(intQuery.tuple);
 				slc_fsmState = UPD_RSP;

@@ -76,6 +76,7 @@ void tx_app_if(	stream<ipTuple>&				appOpenConnReq,
 	static ap_uint<16> tai_closeSessionID;
 
 	ipTuple server_addr;
+
 	//fourTuple tuple;
 	sessionLookupReply session;
 	sessionState state;
@@ -88,16 +89,18 @@ void tx_app_if(	stream<ipTuple>&				appOpenConnReq,
 	 * New OPEN request.
 	 * Send a lookup&insert request to hash_table (session)
 	 */
-	if (!appOpenConnReq.empty() && !portTable2txApp_port_rsp.empty())
-	{
+	if (!appOpenConnReq.empty() && !portTable2txApp_port_rsp.empty()) {
+		appOpenConnReq.read(server_addr);
+
 		/*
 		 * NOTE YS
-		 *
-		 * Okay this is the place to choose free port.
-		 * Can you let ipTuple to pass this?
+		 * Use the port specified by the endhost
 		 */
-		appOpenConnReq.read(server_addr);
+#if 1
+		freePort = server_addr.local_port;
+#else
 		portTable2txApp_port_rsp.read(freePort);
+#endif
 
 		// Implicit creationAllowed <= true
 		txApp2sLookup_req.write(

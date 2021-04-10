@@ -42,6 +42,7 @@ struct ipTuple
 {
 	ap_uint<32>	ip_address;
 	ap_uint<16>	ip_port;
+	ap_uint<16>     local_port;
 };
 
 struct mmCmd
