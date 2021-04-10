@@ -125,7 +125,15 @@ void free_port_table(	stream<ap_uint<16> >&	sLookup2portTable_releasePort,
 	}
 	else if (!pt_portCheckUsed_req_fifo.empty())
 	{
-		pt_portCheckUsed_rsp_fifo.write(freePortTable[pt_portCheckUsed_req_fifo.read()]);
+		//pt_portCheckUsed_rsp_fifo.write(freePortTable[pt_portCheckUsed_req_fifo.read()]);
+
+		/*
+		 * NOTE YS
+		 * Assume all client ports are open.
+		 */
+		ap_uint<15> unused = pt_portCheckUsed_req_fifo.read();
+		pt_portCheckUsed_rsp_fifo.write(true);
+
 	}
 	else
 	{
