@@ -96,11 +96,10 @@ void tx_app_if(	stream<ipTuple>&				appOpenConnReq,
 		 * NOTE YS
 		 * Use the port specified by the endhost
 		 */
-#if 1
 		freePort = server_addr.local_port;
-#else
-		portTable2txApp_port_rsp.read(freePort);
-#endif
+
+		ap_uint<16> unused;
+		portTable2txApp_port_rsp.read(unused);
 
 		// Implicit creationAllowed <= true
 		txApp2sLookup_req.write(

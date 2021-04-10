@@ -156,7 +156,9 @@ void lookupReplyHandler(stream<rtlSessionLookupReply>&			sessionLookup_rsp,
 				 * The local port is not allocated by TCP module either,
 				 * I've changed to let caller pass it during open time.
 				 */
-				//sessionIdFreeList.read(freeID);
+				ap_uint<16> unused;
+				unused = sessionIdFreeList.read();
+
 				freeID = intQuery.tuple.myPort;
 				sessionInsert_req.write(rtlSessionUpdateRequest(intQuery.tuple, freeID, INSERT, lupReply.source));
 				slc_insertTuples.write(intQuery.tuple);
