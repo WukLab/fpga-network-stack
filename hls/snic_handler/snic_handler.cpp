@@ -115,14 +115,15 @@ void client(hls::stream<ipTuple> &openConnection,
 	static sendDataState sendDataState = S_IDLE;
 	static ap_uint<16> sessionID;
 	static ap_uint<16> len;
+	static net_axis<WIDTH> wdata;
 
 	switch (sendDataState) {
 	case (S_IDLE):
 		if (!dataFromEndpoint2TCP.empty()) {
-			/*
-			 * TODO
-			 * the packets from host should have sessionID included
-			 */
+			wdata      = dataFromEndpoint2TCP.read();
+			sessionID  = wdata.data(SNIC_OP_OFFSET+1*32+32-1, SNIC_OP_OFFSET+1*32);
+			len        = wdata.data(SNIC_OP_OFFSET+2*32+32-1, SNIC_OP_OFFSET+2*32);
+
 			txMetaData.write(appTxMeta(sessionID, len));
 			sendDataState = WAIT_TX_STATUS;
 		}
@@ -204,8 +205,6 @@ void server(hls::stream<ap_uint<16> > &listenPort, hls::stream<bool> &listenPort
 	/*
 	 * TCP notify us that there is incoming data
 	 * We immediately send a ReadRequest to read the data from TCP module
-	 *
-	 * TODO: we should rmap the sessionID back to the host port ID.
 	 */
 	if (!notifications.empty()) {
 		appNotification notification = notifications.read();
@@ -287,47 +286,69 @@ void parse_packets(hls::stream<net_axis<WIDTH> > &dataFromEndpoint,
 	static struct internalOpenConnMeta open;
 	static struct internalListenConnMeta listen;
 
-	/*
-	 * FAT NOTE
-	 *
-	 * All these snic fields sent over are little-endian,
-	 * the same with x86. This works fine as long as all
-	 * parities use little-endian.
-	 */
-	if (!dataFromEndpoint.empty()) {
-		net_axis<WIDTH> w = dataFromEndpoint.read();
+	enum parseState { IDLE, WRITE_DATA };
+	static parseState state = IDLE;
 
-		static int op = w.data(SNIC_OP_OFFSET+32-1, SNIC_OP_OFFSET);
-		static int local_port = 0;
-		static int remote_ip = 0;
-		static int remote_port = 0;
+	switch (state) {
+	case IDLE:
+		/*
+		 * FAT NOTE
+		 *
+		 * All these snic fields sent over are little-endian,
+		 * the same with x86. This works fine as long as all
+		 * parities use little-endian.
+		 */
+		if (!dataFromEndpoint.empty()) {
+			net_axis<WIDTH> w = dataFromEndpoint.read();
 
-		if (op == SNIC_TCP_HANDLER_OP_OPEN_CONN) {
-			local_port  = w.data(SNIC_OP_OFFSET+1*32+32-1, SNIC_OP_OFFSET+1*32);
-			remote_ip   = w.data(SNIC_OP_OFFSET+2*32+32-1, SNIC_OP_OFFSET+2*32);
-			remote_port = w.data(SNIC_OP_OFFSET+3*32+32-1, SNIC_OP_OFFSET+3*32);
+			static int op = w.data(SNIC_OP_OFFSET+32-1, SNIC_OP_OFFSET);
+			static int local_port = 0;
+			static int remote_ip = 0;
+			static int remote_port = 0;
 
-			open.local_port = local_port;
-			open.remote_ip = remote_ip;
-			open.remote_port = remote_port;
-			internalOpenConnMeta.write(open);
-		} else if (op == SNIC_TCP_HANDLER_OP_LISTEN) {
-			//listen.local_port = port;
-			internalListenConnMeta.write(listen);
-		} else if (op == SNIC_TCP_HANDLER_OP_WRITE) {
-			unsigned int length;
+			if (op == SNIC_TCP_HANDLER_OP_OPEN_CONN) {
+				local_port  = w.data(SNIC_OP_OFFSET+1*32+32-1, SNIC_OP_OFFSET+1*32);
+				remote_ip   = w.data(SNIC_OP_OFFSET+2*32+32-1, SNIC_OP_OFFSET+2*32);
+				remote_port = w.data(SNIC_OP_OFFSET+3*32+32-1, SNIC_OP_OFFSET+3*32);
 
-			/*
-			 * TODO
-			 * Deal with this.
-			 * The host would use sessionid.
-			 */
-			local_port = w.data(SNIC_OP_OFFSET+1*32+32-1, SNIC_OP_OFFSET+1*32);
-			length     = w.data(SNIC_OP_OFFSET+2*32+32-1, SNIC_OP_OFFSET+2*32);
-			dataFromEndpoint2TCP.write(w);
-		} else if (op == SNIC_TCP_HANDLER_OP_CLOSE) {
-			closeConnection.write(0);
+				open.local_port = local_port;
+				open.remote_ip = remote_ip;
+				open.remote_port = remote_port;
+				internalOpenConnMeta.write(open);
+			} else if (op == SNIC_TCP_HANDLER_OP_LISTEN) {
+				//listen.local_port = port;
+				internalListenConnMeta.write(listen);
+			} else if (op == SNIC_TCP_HANDLER_OP_WRITE) {
+				unsigned int length;
+
+				/*
+					struct snic_handler_write_req {
+						struct common_headers common_headers;
+						uint32_t op;
+						uint32_t local_port;
+						uint32_t length;
+						char data[];
+					} __packed;
+				*/
+				// local_port = w.data(SNIC_OP_OFFSET+1*32+32-1, SNIC_OP_OFFSET+1*32);
+				// length     = w.data(SNIC_OP_OFFSET+2*32+32-1, SNIC_OP_OFFSET+2*32);
+				dataFromEndpoint2TCP.write(w);
+
+				state = WRITE_DATA;
+			} else if (op == SNIC_TCP_HANDLER_OP_CLOSE) {
+				closeConnection.write(0);
+			}
 		}
+		break;
+	case WRITE_DATA:
+		if (!dataFromEndpoint.empty()) {
+			net_axis<WIDTH> data = dataFromEndpoint.read();
+			dataFromEndpoint2TCP.write(data);
+			if (data.last) {
+				state = IDLE;
+			}
+		}
+		break;
 	}
 }
 
